@@ -7213,12 +7213,12 @@
     "1726248907805": {
       "events": {},
       "links": {},
-      "address": "0x4beA5733707BD460D23ca1065c3065bD4D2EfAEF",
-      "transactionHash": "0x54fea9232238330292eb740ef0525113f52b27ebcae7f8d4eb39a52b2549817c"
+      "address": "0x596a58959872f44d4ad96CAa9443BB7217ba73A1",
+      "transactionHash": "0x25d20e3e70197c449152d82674e15d53837083a46a26c0406bfb7646e2e97a62"
     }
   },
   "schemaVersion": "3.4.16",
-  "updatedAt": "2024-09-13T17:35:45.943Z",
+  "updatedAt": "2024-09-14T13:50:07.423Z",
   "networkType": "ethereum",
   "devdoc": {
     "kind": "dev",
