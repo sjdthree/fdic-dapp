@@ -40,5 +40,10 @@
       "last 1 firefox version",
       "last 1 safari version"
     ]
+  },
+  "jest": {
+  "moduleNameMapper": {
+    "^@web3auth/modal$": "<rootDir>/src/__mocks__/@web3auth/modal.js"
   }
+}
 }
