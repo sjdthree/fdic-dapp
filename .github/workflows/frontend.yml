@@ -1,0 +1,35 @@
+name: Frontend CI
+
+on:
+  push:
+    branches: [web3auth-integration]
+  pull_request:
+    branches: [web3auth-integration]
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    strategy:
+      matrix:
+        node-version: [14.x, 16.x]
+
+    steps:
+      - uses: actions/checkout@v3
+
+      - name: Use Node.js ${{ matrix.node-version }}
+        uses: actions/setup-node@v3
+        with:
+          node-version: ${{ matrix.node-version }}
+          cache: 'npm'
+
+      - name: Install Frontend Dependencies
+        working-directory: ./frontend
+        run: npm install
+
+      - name: Build Frontend
+        working-directory: ./frontend
+        env:
+          REACT_APP_WEB3AUTH_CLIENT_ID: ${{ secrets.WEB3AUTH_CLIENT_ID }}
+          REACT_APP_INFURA_PROJECT_ID: ${{ secrets.INFURA_PROJECT_ID }}
+        run: npm run build

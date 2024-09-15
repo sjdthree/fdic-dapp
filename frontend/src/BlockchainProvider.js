@@ -7,6 +7,13 @@ import { ethers } from 'ethers';
 
 export const BlockchainContext = createContext();
 
+// src/BlockchainProvider.js
+
+// const clientId = process.env.REACT_APP_WEB3AUTH_CLIENT_ID;
+const infuraProjectId = process.env.REACT_APP_INFURA_PROJECT_ID;
+
+// Use these variables where needed
+
 export const BlockchainProvider = ({ children }) => {
   const [provider, setProvider] = useState(null);
   const [web3auth, setWeb3auth] = useState(null);
@@ -17,7 +24,7 @@ export const BlockchainProvider = ({ children }) => {
     Ethereum: {
       chainNamespace: CHAIN_NAMESPACES.EIP155,
       chainId: '0x1',
-      rpcTarget: 'https://mainnet.infura.io/v3/YOUR_INFURA_PROJECT_ID',
+      rpcTarget:`https://mainnet.infura.io/v3/${infuraProjectId}`,
       displayName: 'Ethereum Mainnet',
     },
     Polygon: {
@@ -61,7 +68,7 @@ export const BlockchainProvider = ({ children }) => {
       } else {
         // Initialize Web3Auth
         try {
-          const clientId = 'YOUR_WEB3AUTH_CLIENT_ID'; // Replace with your Web3Auth Client ID
+          const clientId = process.env.REACT_APP_WEB3AUTH_CLIENT_ID;
 
           const chainConfig = chainConfigs[selectedChain];
 
