@@ -2,12 +2,22 @@
 const OnChainFDIC = artifacts.require('OnChainFDIC');
 
 contract('OnChainFDIC', (accounts) => {
-  const [depositor, bank, nonDepositor] = accounts;
+  const [regulator, depositor, bank, nonDepositor] = accounts;
 
   let fdicInstance;
 
   beforeEach(async () => {
-    fdicInstance = await OnChainFDIC.new();
+    // Deploy the contract with the regulator account
+    fdicInstance = await OnChainFDIC.new({ from: regulator });
+
+    // Register the bank before each test
+    await fdicInstance.registerBank(bank, { from: regulator });
+
+    // Fund the insurance pool (contract balance) for testing insurance claims
+    await fdicInstance.sendTransaction({
+      from: regulator,
+      value: web3.utils.toWei('10', 'ether'),
+    });
   });
 
   it('should allow a user to deposit funds', async () => {
@@ -19,13 +29,17 @@ contract('OnChainFDIC', (accounts) => {
       value: depositAmount,
     });
 
-    // Check that the Deposit event was emitted
-    const event = tx.logs.find((log) => log.event === 'Deposit');
-    assert(event, 'Deposit event was not emitted');
+    // Check that the DepositMade event was emitted
+    const event = tx.logs.find((log) => log.event === 'DepositMade');
+    assert(event, 'DepositMade event was not emitted');
 
     // Verify depositor's balance in the contract
-    const balance = await fdicInstance.deposits(depositor, bank);
-    assert.equal(balance.toString(), depositAmount, 'Deposit amount mismatch');
+    const depositorData = await fdicInstance.deposits(depositor, bank);
+    assert.equal(
+      depositorData.amount.toString(),
+      depositAmount,
+      'Deposit amount mismatch'
+    );
   });
 
   it('should allow a depositor to claim insurance after bank failure', async () => {
@@ -37,43 +51,48 @@ contract('OnChainFDIC', (accounts) => {
       value: depositAmount,
     });
 
-    // Simulate bank failure by setting its balance to zero (you might need to adjust this based on your contract logic)
-    // In this example, we'll assume the bank's balance is maintained in the contract
-    // and we can set its failure status
+    // Simulate bank failure
+    await fdicInstance.failBank(bank, { from: regulator });
 
-    // For the test, we'll directly call a function to simulate bank failure
-    // This function should only be callable by the contract owner or appropriate authority
-    // Ensure your contract has such a function for testing purposes
-
-    // Simulate bank failure (this function should exist in your contract for testing)
-    // await fdicInstance.failBank(bank, { from: owner }); // Uncomment and adjust as needed
-
-    // For the purpose of this test, we'll assume the bank has failed
     // Depositor attempts to claim insurance
-    const initialDepositorBalance = await web3.eth.getBalance(depositor);
+    const initialBalance = web3.utils.toBN(await web3.eth.getBalance(depositor));
 
     const tx = await fdicInstance.claimInsurance(bank, { from: depositor });
 
-    // Check that the InsuranceClaimed event was emitted
-    const event = tx.logs.find((log) => log.event === 'InsuranceClaimed');
-    assert(event, 'InsuranceClaimed event was not emitted');
+    // Check that the CompensationPaid event was emitted
+    const event = tx.logs.find((log) => log.event === 'CompensationPaid');
+    assert(event, 'CompensationPaid event was not emitted');
 
-    // Verify depositor's balance increased
-    const finalDepositorBalance = await web3.eth.getBalance(depositor);
+    // Verify depositor's balance increased (considering gas costs)
+    const finalBalance = web3.utils.toBN(await web3.eth.getBalance(depositor));
+    const gasUsed = web3.utils.toBN(tx.receipt.gasUsed);
+    const txDetails = await web3.eth.getTransaction(tx.tx);
+    const gasPrice = web3.utils.toBN(txDetails.gasPrice);
+    const gasCost = gasUsed.mul(gasPrice);
+
+    const expectedBalance = initialBalance
+      .add(web3.utils.toBN(depositAmount))
+      .sub(gasCost);
+
     assert(
-      web3.utils.toBN(finalDepositorBalance).gt(web3.utils.toBN(initialDepositorBalance)),
-      'Depositor balance did not increase after claiming insurance'
+      finalBalance.eq(expectedBalance),
+      'Depositor balance did not increase correctly after claiming insurance'
     );
   });
 
-  it('should not allow a non-depositor to claim insurance', async () => {
+// test/OnChainFDIC.test.js
+it('should not allow a non-depositor to claim insurance', async () => {
+    // Simulate bank failure
+    await fdicInstance.failBank(bank, { from: regulator });
+  
     try {
       await fdicInstance.claimInsurance(bank, { from: nonDepositor });
       assert.fail('Non-depositor was able to claim insurance');
     } catch (error) {
+      const expectedError = 'No insured amount to claim';
       assert(
-        error.message.includes('No deposit found'),
-        'Incorrect error message when non-depositor attempts to claim insurance'
+        error.message.includes(expectedError),
+        `Expected error message to include '${expectedError}', but got '${error.message}'`
       );
     }
   });
