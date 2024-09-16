@@ -35,22 +35,35 @@ const ClaimInsurance = () => {
   };
 
   return (
-    <div>
+    <div className="claim-insurance-section">
       <h2>Claim Insurance</h2>
+      <p>
+        If the bank where your funds are deposited has failed, you can claim 
+        insurance. The blockchain will verify the bank’s failure and reimburse 
+        you for the insured amount.
+      </p>
       <label>
-        Bank Address:
+        <strong>Bank Address:</strong>
         <input
           type="text"
-          placeholder="Bank Address"
           value={bankAddress}
           onChange={(e) => setBankAddress(e.target.value)}
+          placeholder="Enter the bank's blockchain address"
         />
+        <p>
+          This is the blockchain address of the failed bank. If the bank has 
+          failed, you will be able to claim the insurance amount.
+        </p>
       </label>
-      <button onClick={handleClaim} disabled={isLoading}>
-        {isLoading ? 'Processing...' : 'Claim'}
+      <button onClick={handleClaim}>
+        Claim Insurance
       </button>
+      <p>
+        When you click "Claim Insurance," the smart contract will check the 
+        bank’s status and release your insured deposit if the bank has failed.
+      </p>
     </div>
   );
-};
+}
 
 export default ClaimInsurance;

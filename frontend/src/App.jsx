@@ -39,8 +39,22 @@ function MainApp() {
   return (
     <div className="App">
       <h1>On-Chain FDIC Insurance DApp</h1>
+      
+      <section className="info-section">
+        <p>
+          Welcome to the On-Chain FDIC Insurance DApp. This decentralized application simulates 
+          the process of FDIC insurance on the blockchain. FDIC insurance ensures that your bank 
+          deposits are protected in case of bank failure, up to a certain amount.
+        </p>
+        <p>
+          This app allows you to interact with blockchain-based banks by depositing funds and 
+          claiming insurance in case of failure. Use this app to explore how decentralized 
+          finance (DeFi) can provide transparency and trust in banking.
+        </p>
+      </section>
+
       <label>
-        Select Network:
+        <strong>Select Network:</strong>
         <select value={selectedChain} onChange={handleChainChange}>
           {chainOptions.map((chain) => (
             <option key={chain.value} value={chain.value}>
@@ -48,7 +62,9 @@ function MainApp() {
             </option>
           ))}
         </select>
+        <p>This simulates the environment in which your bank operates.</p>
       </label>
+
       {provider ? (
         <>
           {needsLogin && <button onClick={logout}>Logout</button>}
