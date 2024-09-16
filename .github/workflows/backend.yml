@@ -1,0 +1,53 @@
+name: Backend CI
+
+on:
+  push:
+    branches: [web3auth-integration]
+  pull_request:
+    branches: [web3auth-integration]
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    
+    strategy:
+      matrix:
+        node-version: [16.x, 22.x]
+
+    steps:
+      - uses: actions/checkout@v3
+
+      - name: Use Node.js ${{ matrix.node-version }}
+        uses: actions/setup-node@v3
+        with:
+          node-version: ${{ matrix.node-version }}
+
+      - name: Install Dependencies
+        run: npm install
+
+      - name: Kill Process on Port 8545 (if any)
+        run: npx kill-port 8545 || true
+
+      - name: Start Ganache CLI
+        run: |
+          npx ganache-cli -p 8545 -m "candy maple cake sugar pudding cream honey rich smooth crumble sweet treat" &
+        env:
+          NODE_ENV: test
+
+      - name: Wait for Ganache
+        run: npx wait-on tcp:8545
+
+      - name: Compile Contracts
+        run: npx truffle compile
+
+      - name: Migrate Contracts
+        run: npx truffle migrate --network development
+
+      - name: Run Backend Tests
+        run: npx truffle test
+
+      - name: Stop Ganache
+        if: always()
+        run: |
+          fuser -k 8545/tcp || true
