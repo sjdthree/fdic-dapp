@@ -1,6 +1,7 @@
 // src/App.js
 import React, { useContext } from 'react';
 import { BlockchainProvider, BlockchainContext } from './BlockchainProvider';
+import { chainConfig } from './chainConfig'; // Import the chainConfig
 import Deposit from './components/Deposit';
 import ClaimInsurance from './components/ClaimInsurance';
 
@@ -26,13 +27,12 @@ function MainApp() {
     return <div>Loading...</div>;
   }
 
-  const chainOptions = [
-    { value: 'Ethereum', label: 'Ethereum Mainnet' },
-    { value: 'Polygon', label: 'Polygon (Matic)' },
-    { value: 'BinanceSmartChain', label: 'Binance Smart Chain' },
-    { value: 'Ganache', label: 'Localhost 8545 (Ganache)' },
-    // Add more options as needed
-  ];
+  // Dynamically create chainOptions from chainConfig
+  const chainOptions = Object.entries(chainConfig).map(([key, config]) => ({
+    value: key,
+    label: config.displayName,
+  }));
+
 
   const needsLogin = selectedChain !== 'Ganache';
 
