@@ -13,6 +13,7 @@
     "@web3auth/openlogin-adapter": "^8.12.4",
     "crypto-browserify": "^3.12.0",
     "ethers": "^6.13.2",
+    "https-browserify": "^1.0.0",
     "react": "^18.3.1",
     "react-dom": "^18.3.1",
     "react-scripts": "5.0.1",
@@ -45,8 +46,8 @@
     ]
   },
   "jest": {
-  "moduleNameMapper": {
-    "^@web3auth/modal$": "<rootDir>/src/__mocks__/@web3auth/modal.js"
+    "moduleNameMapper": {
+      "^@web3auth/modal$": "<rootDir>/src/__mocks__/@web3auth/modal.js"
+    }
   }
-}
 }
