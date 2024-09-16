@@ -25,14 +25,14 @@ export const chainConfig = {
   //   ticker: "ETH",
   //   tickerName: "Ethereum",
   // },
-  EthereumSepolia: {
+  PolygonZKevm_test: {
     chainNamespace: "eip155",
-    chainId: "0xaa36a7", // Sepolia Testnet
-    rpcTarget: "https://rpc.sepolia.org",
-    displayName: "Sepolia Testnet",
-    blockExplorerUrl: "https://sepolia.etherscan.io",
-    ticker: "ETH",
-    tickerName: "Ethereum",
+    chainId: "0x5a2", // Polygon zkEVM Testnet Chain ID
+    rpcTarget: "https://rpc.public.zkevm-test.net", // RPC URL 
+    displayName: "Polygon zkEVM Testnet", // Display name for the network
+    blockExplorer: "https://testnet-zkevm.polygonscan.com/", // Block Explorer URL
+    ticker: "ETH", // Currency symbol
+    tickerName: "Ethereum" // Currency name
   },
   PolygonMainnet: {
     chainNamespace: "eip155",

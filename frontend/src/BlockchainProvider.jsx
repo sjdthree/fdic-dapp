@@ -14,15 +14,21 @@ console.log("Client ID:", clientId);
 
 const chainConfig = {
   chainNamespace: CHAIN_NAMESPACES.EIP155,
-  chainId: "0xaa36a7",
-  rpcTarget: "https://rpc.ankr.com/eth_sepolia",
-  // Avoid using public rpcTarget in production.
-  // Use services like Infura, Quicknode etc
-  displayName: "Ethereum Sepolia Testnet",
-  blockExplorerUrl: "https://sepolia.etherscan.io",
-  ticker: "ETH",
-  tickerName: "Ethereum",
-  logo: "https://cryptologos.cc/logos/ethereum-eth-logo.png",
+  // chainId: "0xaa36a7",
+  // rpcTarget: "https://rpc.ankr.com/eth_sepolia",
+  // // Avoid using public rpcTarget in production.
+  // // Use services like Infura, Quicknode etc
+  // displayName: "Ethereum Sepolia Testnet",
+  // blockExplorerUrl: "https://sepolia.etherscan.io",
+  // ticker: "ETH",
+  // tickerName: "Ethereum",
+  // logo: "https://cryptologos.cc/logos/ethereum-eth-logo.png",
+  chainId: "0x5a2", // Polygon zkEVM Testnet Chain ID
+  rpcTarget: "https://rpc.public.zkevm-test.net", // RPC URL 
+  displayName: "Polygon zkEVM Testnet", // Display name for the network
+  blockExplorer: "https://testnet-zkevm.polygonscan.com/", // Block Explorer URL
+  ticker: "ETH", // Currency symbol
+  tickerName: "Ethereum" // Currency name
 };
 
 export const BlockchainProvider = ({ children }) => {
