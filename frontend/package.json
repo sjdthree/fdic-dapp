@@ -9,7 +9,7 @@
     "@testing-library/react": "^13.4.0",
     "@testing-library/user-event": "^13.5.0",
     "@vitejs/plugin-react": "^4.3.1",
-    "@web3auth/base": "^1.1.0",
+    "@web3auth/base": "^8.12.4",
     "@web3auth/ethereum-provider": "^8.12.4",
     "@web3auth/modal": "^8.12.7",
     "@web3auth/openlogin-adapter": "^8.12.4",
@@ -40,7 +40,7 @@
     "start": "vite",
     "build": "tsc && vite build",
     "serve": "vite preview"
-    },
+  },
   "eslintConfig": {
     "extends": [
       "react-app",
@@ -65,6 +65,7 @@
     }
   },
   "devDependencies": {
-    "empty-module": "^0.0.2"
+    "empty-module": "^0.0.2",
+    "typescript": "^5.6.2"
   }
 }
