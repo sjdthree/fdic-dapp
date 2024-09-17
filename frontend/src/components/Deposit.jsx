@@ -42,31 +42,48 @@ const Deposit = () => {
   };
 
   return (
-    <div>
+    <div className="deposit-section">
       <h2>Make a Deposit</h2>
+      <p>
+        In this section, you can deposit funds into a blockchain bank. Just like 
+        depositing money into a real bank account, the amount you enter will be 
+        stored in the bank’s smart contract.
+      </p>
       <label>
-        Bank Address:
+        <strong>Bank Address:</strong>
         <input
           type="text"
-          placeholder="Bank Address"
           value={bankAddress}
           onChange={(e) => setBankAddress(e.target.value)}
+          placeholder="Enter the bank's blockchain address"
         />
+        <p>
+          The blockchain address of the bank where you want to deposit your 
+          funds. Think of this as the bank’s unique identifier on the blockchain.
+        </p>
       </label>
       <label>
-        Amount in ETH:
+        <strong>Amount in ETH:</strong>
         <input
-          type="text"
-          placeholder="Amount in ETH"
+          type="number"
           value={amount}
           onChange={(e) => setAmount(e.target.value)}
+          placeholder="Enter amount in ETH"
         />
+        <p>
+          The amount of Ether (ETH) you wish to deposit. This is equivalent to 
+          depositing cash in a traditional bank.
+        </p>
       </label>
-      <button onClick={handleDeposit} disabled={isLoading}>
-        {isLoading ? 'Processing...' : 'Deposit'}
+      <button onClick={handleDeposit}>
+        Deposit
       </button>
+      <p>
+        By clicking "Deposit," the smart contract will securely store the amount 
+        in the selected bank.
+      </p>
     </div>
   );
-};
+}
 
 export default Deposit;

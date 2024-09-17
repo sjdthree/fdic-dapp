@@ -3,29 +3,43 @@
   "version": "0.1.0",
   "private": true,
   "dependencies": {
-    "@craco/craco": "^7.1.0",
+    "@craco/craco": "^5.9.0",
+    "@metamask/abi-utils": "1.1.0",
     "@testing-library/jest-dom": "^5.17.0",
     "@testing-library/react": "^13.4.0",
     "@testing-library/user-event": "^13.5.0",
-    "@web3auth/base": "^1.1.0",
+    "@vitejs/plugin-react": "^4.3.1",
+    "@web3auth/base": "^8.12.4",
     "@web3auth/ethereum-provider": "^8.12.4",
     "@web3auth/modal": "^8.12.7",
     "@web3auth/openlogin-adapter": "^8.12.4",
+    "assert": "^2.1.0",
+    "browserify-zlib": "^0.2.0",
+    "buffer": "^6.0.3",
     "crypto-browserify": "^3.12.0",
+    "customize-cra": "^1.0.0",
     "ethers": "^6.13.2",
     "https-browserify": "^1.0.0",
+    "os-browserify": "^0.3.0",
+    "process": "^0.11.10",
     "react": "^18.3.1",
     "react-dom": "^18.3.1",
     "react-scripts": "5.0.1",
     "stream-browserify": "^3.0.0",
     "stream-http": "^3.2.0",
-    "web-vitals": "^2.1.4"
+    "superstruct": "0.14.0",
+    "url": "^0.11.4",
+    "vite": "^5.4.5",
+    "vm-browserify": "^1.1.2",
+    "web-vitals": "^2.1.4",
+    "webpack": "^5",
+    "webpack-cli": "^4",
+    "webpack-dev-server": "^4"
   },
   "scripts": {
-    "start": "craco start",
-    "build": "craco build",
-    "test": "craco test",
-    "eject": "react-scripts eject"
+    "start": "vite",
+    "build": "tsc && vite build",
+    "serve": "vite preview"
   },
   "eslintConfig": {
     "extends": [
@@ -49,5 +63,9 @@
     "moduleNameMapper": {
       "^@web3auth/modal$": "<rootDir>/src/__mocks__/@web3auth/modal.js"
     }
+  },
+  "devDependencies": {
+    "empty-module": "^0.0.2",
+    "typescript": "^5.6.2"
   }
 }
