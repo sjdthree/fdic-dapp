@@ -4,6 +4,9 @@ import { BlockchainProvider, BlockchainContext } from './BlockchainProvider';
 import { chainConfig } from './chainConfig'; // Import the chainConfig
 import Deposit from './components/Deposit';
 import ClaimInsurance from './components/ClaimInsurance';
+import './App.css';
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
+import { faNetworkWired, faMoneyCheckAlt, faShieldAlt } from '@fortawesome/free-solid-svg-icons';
 
 function App() {
   return (
@@ -24,7 +27,7 @@ function MainApp() {
   } = useContext(BlockchainContext);
 
   if (isLoading) {
-    return <div>Loading...</div>;
+    return <div className="loading">Loading...</div>;
   }
 
   // Dynamically create chainOptions from chainConfig
@@ -37,8 +40,16 @@ function MainApp() {
   const needsLogin = selectedChain !== 'Ganache';
 
   return (
-    <div className="App">
+    <div className="app-container">
+    {/* Header Section */}
+    <header className="app-header">
       <h1>On-Chain FDIC Insurance DApp</h1>
+      <p className="app-description">
+        Protect your digital assets with decentralized FDIC-like insurance. Choose a network, deposit funds, and
+        claim insurance when needed.
+      </p>
+      <img className="header-image" src="/assets/insurance.png" alt="Insurance Security" />
+    </header>
       
       <section className="info-section">
         <p>
@@ -53,23 +64,32 @@ function MainApp() {
         </p>
       </section>
 
-      <label>
-        <strong>Select Network:</strong>
-        <select value={selectedChain} onChange={handleChainChange}>
-          {chainOptions.map((chain) => (
-            <option key={chain.value} value={chain.value}>
-              {chain.label}
-            </option>
-          ))}
-        </select>
-        <p>This simulates the environment in which your bank operates.</p>
-      </label>
+      {/* Network Selector */}
+      <div className="network-section">
+        <h2><FontAwesomeIcon icon={faNetworkWired} /> Select Network</h2>
+        <div className="network-selector">
+          <label htmlFor="network-select">Network:</label>
+          <select id="network-select" value={selectedChain} onChange={handleChainChange}>
+            {chainOptions.map((chain) => (
+              <option key={chain.value} value={chain.value}>
+                {chain.label}
+              </option>
+            ))}
+          </select>
+          <p>This simulates the environment in which your bank operates.</p>
+        </div>
+      </div>
 
+      {/* Action Section */}
+      <div className="action-section">
+        <div className="deposit-claim-container">
       {provider ? (
         <>
           {needsLogin && <button onClick={logout}>Logout</button>}
-          <Deposit />
-          <ClaimInsurance />
+          <div className="actions">
+                <Deposit />
+                <ClaimInsurance />
+          </div>
         </>
       ) : (
         <>
@@ -78,6 +98,8 @@ function MainApp() {
           </button>
         </>
       )}
+    </div>
+    </div>
     </div>
   );
 }
