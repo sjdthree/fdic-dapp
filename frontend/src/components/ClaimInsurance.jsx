@@ -2,11 +2,16 @@
 import React, { useState } from 'react';
 import { useFDICContract } from '../useFDICContract';
 import { isAddress } from 'ethers';
+import './ClaimInsurance.css';
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
+import { faShieldAlt } from '@fortawesome/free-solid-svg-icons';
+
 
 const ClaimInsurance = () => {
   const fdicContract = useFDICContract();
   const [bankAddress, setBankAddress] = useState('');
   const [isLoading, setIsLoading] = useState(false);
+  const [claimAmount, setClaimAmount] = useState('');
 
   if (!fdicContract) {
     return <div>Please log in to claim insurance.</div>;
@@ -35,6 +40,23 @@ const ClaimInsurance = () => {
   };
 
   return (
+    <div className="claim-insurance-container">
+    <h2><FontAwesomeIcon icon={faShieldAlt} /> Claim Insurance</h2>
+    <p>To claim your insured amount, enter the claim details below.</p>
+    <div className="form-group">
+      <label htmlFor="claim-amount">Claim Amount (ETH):</label>
+      <input
+        type="number"
+        id="claim-amount"
+        value={claimAmount}
+        onChange={(e) => setClaimAmount(e.target.value)}
+        placeholder="Enter claim amount"
+      />
+    </div>
+    <button className="claim-button" onClick={handleClaim}>
+      Claim Insurance
+    </button>
+
     <div className="claim-insurance-section">
       <h2>Claim Insurance</h2>
       <p>
@@ -62,6 +84,7 @@ const ClaimInsurance = () => {
         When you click "Claim Insurance," the smart contract will check the 
         bank’s status and release your insured deposit if the bank has failed.
       </p>
+    </div>
     </div>
   );
 }

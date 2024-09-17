@@ -1,5 +1,9 @@
 // src/components/Deposit.js
 import React, { useState } from 'react';
+import './Deposit.css';
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
+import { faMoneyCheckAlt } from '@fortawesome/free-solid-svg-icons';
+
 import { useFDICContract } from '../useFDICContract';
 import { parseEther, isAddress } from 'ethers';
 
@@ -7,6 +11,8 @@ const Deposit = () => {
   const fdicContract = useFDICContract();
   const [bankAddress, setBankAddress] = useState('');
   const [amount, setAmount] = useState('');
+  const [depositAmount, setDepositAmount] = useState('');
+
   const [isLoading, setIsLoading] = useState(false);
 
   if (!fdicContract) {
@@ -42,9 +48,9 @@ const Deposit = () => {
   };
 
   return (
-    <div className="deposit-section">
-      <h2>Make a Deposit</h2>
-      <p>
+    <div className="deposit-container">
+      <h2><FontAwesomeIcon icon={faMoneyCheckAlt} /> Make a Deposit</h2>
+        <p>
         In this section, you can deposit funds into a blockchain bank. Just like 
         depositing money into a real bank account, the amount you enter will be 
         stored in the bank’s smart contract.
@@ -62,21 +68,18 @@ const Deposit = () => {
           funds. Think of this as the bank’s unique identifier on the blockchain.
         </p>
       </label>
-      <label>
-        <strong>Amount in ETH:</strong>
+      <div className="form-group">
+        <label htmlFor="deposit-amount">Deposit Amount (ETH):</label>
         <input
           type="number"
-          value={amount}
-          onChange={(e) => setAmount(e.target.value)}
-          placeholder="Enter amount in ETH"
+          id="deposit-amount"
+          value={depositAmount}
+          onChange={(e) => setDepositAmount(e.target.value)}
+          placeholder="Enter deposit amount"
         />
-        <p>
-          The amount of Ether (ETH) you wish to deposit. This is equivalent to 
-          depositing cash in a traditional bank.
-        </p>
-      </label>
-      <button onClick={handleDeposit}>
-        Deposit
+      </div>
+      <button className="deposit-button" onClick={handleDeposit}>
+        Deposit Funds
       </button>
       <p>
         By clicking "Deposit," the smart contract will securely store the amount 
@@ -84,6 +87,7 @@ const Deposit = () => {
       </p>
     </div>
   );
+
 }
 
 export default Deposit;
