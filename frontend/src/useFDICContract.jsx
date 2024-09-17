@@ -12,6 +12,7 @@ export const useFDICContract = () => {
     () => ({
     Ethereum: '0xYourEthereumContractAddress', // Replace with your contract address on Ethereum
     Polygon: '0xYourPolygonContractAddress',   // Replace with your contract address on Polygon
+    PolygonAmoy: '0xe97c2190996c7661657a07bD114844b36A9882c2',
     PolygonZKevm_test: '0xe97c2190996c7661657a07bD114844b36A9882c2',
     Ganache: '0x596a58959872f44d4ad96CAa9443BB7217ba73A1',   // Replace with your Ganache contract address
     // Add more as needed
