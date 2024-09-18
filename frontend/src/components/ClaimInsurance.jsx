@@ -53,9 +53,7 @@ const ClaimInsurance = () => {
         placeholder="Enter claim amount"
       />
     </div>
-    <button className="claim-button" onClick={handleClaim}>
-      Claim Insurance
-    </button>
+
 
     <div className="claim-insurance-section">
       <h2>Claim Insurance</h2>
@@ -76,14 +74,15 @@ const ClaimInsurance = () => {
           This is the blockchain address of the failed bank. If the bank has 
           failed, you will be able to claim the insurance amount.
         </p>
-      </label>
-      <button onClick={handleClaim}>
-        Claim Insurance
+  
+      <button className="claim-button" onClick={handleClaim}>
+      Claim Insurance
       </button>
       <p>
         When you click "Claim Insurance," the smart contract will check the 
         bank’s status and release your insured deposit if the bank has failed.
       </p>
+      </label>
     </div>
     </div>
   );
