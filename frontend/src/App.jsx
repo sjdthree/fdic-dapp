@@ -69,7 +69,7 @@ function MainApp() {
       </section>
 
       {/* Network Selector */}
-      <div className="network-section">
+      <div className="network-selector">
         <h2><FontAwesomeIcon icon={faNetworkWired} /> Select Network</h2>
         <h2> *** NOTE ONLY POLYGON AMOY TESTNET IS ACTIVE CURRENTLY *** </h2>
         <div className="network-selector">
@@ -90,12 +90,12 @@ function MainApp() {
         <div className="deposit-claim-container">
       {provider ? (
         <>
-          {needsLogin && <button onClick={logout}>Logout</button>}
           <div className="actions">
                 <Deposit />
                 <ClaimInsurance />
           </div>
           <WalletInfo />
+          {needsLogin && <button onClick={logout}>Logout</button>}
         </>
       ) : (
         <>
