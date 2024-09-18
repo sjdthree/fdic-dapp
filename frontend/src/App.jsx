@@ -7,6 +7,7 @@ import ClaimInsurance from './components/ClaimInsurance';
 import './App.css';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faNetworkWired, faMoneyCheckAlt, faShieldAlt } from '@fortawesome/free-solid-svg-icons';
+import WalletInfo from "./WalletInfo";
 
 function App() {
   return (
@@ -21,6 +22,7 @@ function MainApp() {
     provider,
     login,
     logout,
+    loggedIn,
     isLoading,
     selectedChain,
     handleChainChange,
@@ -43,7 +45,9 @@ function MainApp() {
     <div className="app-container">
     {/* Header Section */}
     <header className="app-header">
+    <div className="App">
       <h1>On-Chain FDIC Insurance DApp</h1>
+    </div>
       <p className="app-description">
         Protect your digital assets with decentralized FDIC-like insurance. Choose a network, deposit funds, and
         claim insurance when needed.
@@ -91,6 +95,7 @@ function MainApp() {
                 <Deposit />
                 <ClaimInsurance />
           </div>
+          <WalletInfo />
         </>
       ) : (
         <>

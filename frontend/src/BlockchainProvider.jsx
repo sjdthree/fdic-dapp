@@ -30,6 +30,7 @@ export const BlockchainProvider = ({ children }) => {
   const [web3auth, setWeb3Auth] = useState(null);
   const [isLoading, setIsLoading] = useState(true);
   const [loggedIn, setLoggedIn] = useState(false);
+  const [userInfo, setUserInfo] = useState(null); // State to store user info
 
   useEffect(() => {
     const initWeb3Auth = async () => {
@@ -55,13 +56,19 @@ export const BlockchainProvider = ({ children }) => {
 
         web3auth.configureAdapter(openloginAdapter);
         await web3auth.initModal();
+        setWeb3Auth(web3auth);
 
         if (web3auth.connected) {
           const ethersProvider = new ethers.BrowserProvider(web3auth.provider);
           setProvider(ethersProvider);
+          const user = await web3auth.getUserInfo(); // Get user info after login
+          setUserInfo(user); // Store user info in state
+          console.log("User Info:", user);
+          setLoggedIn(true);
+  
         }
 
-        setWeb3Auth(web3auth);
+     
         setIsLoading(false);
       } catch (error) {
         console.error("Error initializing Web3Auth:", error);
@@ -73,16 +80,16 @@ export const BlockchainProvider = ({ children }) => {
   }, []);
 
   const login = async () => {
-    if (!web3auth) {
-      console.log("Web3Auth not initialized");
-      return;
-    }
+
 
     try {
       const web3authProvider = await web3auth.connect(); // Initiates Web3Auth modal for login
       const ethersProvider = new ethers.BrowserProvider(web3auth.provider);
       setProvider(ethersProvider);
       setLoggedIn(true);
+      const user = await web3auth.getUserInfo();
+      setUserInfo(user);
+
     } catch (error) {
       console.error("Login failed:", error);
     }
@@ -108,6 +115,7 @@ export const BlockchainProvider = ({ children }) => {
       value={{
         provider,
         loggedIn,
+        userInfo,
         isLoading,
         login,
         logout,
