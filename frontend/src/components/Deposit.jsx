@@ -11,6 +11,9 @@ const Deposit = () => {
   const fdicContract = useFDICContract();
   const [bankAddress, setBankAddress] = useState('');
   const [depositAmount, setDepositAmount] = useState('');
+  const [error, setError] = useState(null); // Error state
+
+  const INSURANCE_LIMIT = 250000; // 250,000 ETH insurance limit
 
   const [isLoading, setIsLoading] = useState(false);
 
@@ -19,6 +22,8 @@ const Deposit = () => {
   }
 
   const handleDeposit = async () => {
+    setError(null); // Clear previous errors
+
     if (!bankAddress.trim()) {
       alert('Please enter the bank address.');
       return;
@@ -30,7 +35,14 @@ const Deposit = () => {
     const numericAmount = parseFloat(depositAmount); // Convert to a number
 
     if (!depositAmount.trim() || isNaN(numericAmount) || numericAmount <= 0) {
-      alert('Please enter a valid amount.' + depositAmount);
+      setError('Please enter a valid deposit amount.');
+      return;
+    }
+    if (depositAmount > INSURANCE_LIMIT) {
+      setError(`Deposit exceeds the insurance limit of ${INSURANCE_LIMIT} ETH. Only ${INSURANCE_LIMIT} ETH will be insured.`);
+    }
+    if (!fdicContract) {
+      setError('FDIC Contract is not initialized. Please try again.');
       return;
     }
     try {
@@ -44,7 +56,26 @@ const Deposit = () => {
     } catch (error) {
       setIsLoading(false);
       console.error(error);
-      alert('An error occurred during the deposit.');
+      handleDepositError(error);
+    }
+  };
+
+  const handleDepositError = (error) => {
+    // Smart Contract specific errors
+    if (error.message.includes('Bank is not registered')) {
+      setError('The selected bank is not registered. Please select a valid bank.');
+    } else if (error.message.includes('Bank has failed')) {
+      setError('The selected bank has failed. You cannot deposit funds into a failed bank.');
+    }
+    // Ethereum transaction errors
+    else if (error.code === 'INSUFFICIENT_FUNDS') {
+      setError('You do not have enough funds in your wallet to complete this transaction.');
+    } else if (error.code === 'INVALID_ARGUMENT') {
+      setError('Invalid input. Please ensure the amount is a valid number.');
+    } else if (error.code === 'NETWORK_ERROR') {
+      setError('Network error. Please check your internet connection or switch to a valid network.');
+    } else {
+      setError(`An unexpected error occurred: ${error.message}`);
     }
   };
 
@@ -82,6 +113,7 @@ const Deposit = () => {
       <button className="deposit-button" onClick={handleDeposit}>
         Deposit Funds
       </button>
+      {error && <div className="error-message">{error}</div>}
       <p>
         By clicking "Deposit," the smart contract will securely store the amount 
         in the selected bank.

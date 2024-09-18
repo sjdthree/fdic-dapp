@@ -12,12 +12,19 @@ const ClaimInsurance = () => {
   const [bankAddress, setBankAddress] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const [claimAmount, setClaimAmount] = useState('');
+  const [error, setError] = useState(null); // Error state
 
   if (!fdicContract) {
     return <div>Please log in to claim insurance.</div>;
   }
 
   const handleClaim = async () => {
+    setError(null); // Clear previous errors
+    if (!fdicContract) {
+      setError('FDIC Contract is not initialized. Please try again.');
+      return;
+    }
+
     if (!bankAddress.trim()) {
       alert('Please enter the bank address.');
       return;
@@ -34,8 +41,25 @@ const ClaimInsurance = () => {
       alert('Insurance claimed!');
     } catch (error) {
       setIsLoading(false);
-      console.error(error);
-      alert('An error occurred during the claim.');
+      console.error('Claim failed:', error);
+      handleClaimError(error);
+    }
+  };
+
+  const handleClaimError = (error) => {
+    // Smart Contract specific errors
+    if (error.message.includes('Bank has not failed')) {
+      setError('You cannot claim insurance from a bank that has not failed.');
+    } else if (error.message.includes('No insured amount to claim')) {
+      setError('You do not have any insured amount to claim.');
+    }
+    // Ethereum transaction errors
+    else if (error.code === 'INSUFFICIENT_FUNDS') {
+      setError('The contract does not have enough funds to pay out this claim.');
+    } else if (error.code === 'NETWORK_ERROR') {
+      setError('Network error. Please check your internet connection or switch to a valid network.');
+    } else {
+      setError(`An unexpected error occurred: ${error.message}`);
     }
   };
 
@@ -78,6 +102,7 @@ const ClaimInsurance = () => {
       <button className="claim-button" onClick={handleClaim}>
       Claim Insurance
       </button>
+      {error && <div className="error-message">{error}</div>}
       <p>
         When you click "Claim Insurance," the smart contract will check the 
         bank’s status and release your insured deposit if the bank has failed.

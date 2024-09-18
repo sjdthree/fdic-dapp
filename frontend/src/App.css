@@ -110,3 +110,13 @@ button:hover {
     width: 100%;
   }
 }
+
+.error-message {
+  color: red;
+  font-weight: bold;
+  margin-top: 10px;
+  background-color: #ffe6e6;
+  padding: 10px;
+  border: 1px solid red;
+  border-radius: 5px;
+}
