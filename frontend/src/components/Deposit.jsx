@@ -28,7 +28,7 @@ const Deposit = () => {
       return;
     }
     const numericAmount = parseFloat(depositAmount); // Convert to a number
-    alert('amount: ' + depositAmount + ' end of amount');
+
     if (!depositAmount.trim() || isNaN(numericAmount) || numericAmount <= 0) {
       alert('Please enter a valid amount.' + depositAmount);
       return;
