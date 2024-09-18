@@ -25,11 +25,15 @@ export const useFDICContract = () => {
       if (provider) {
         try {
           const signer = await provider.getSigner();
-          const contractAddress = contractAddresses[selectedChain];
+          // Set default chain to "PolygonAmoy" if selectedChain is null or undefined
+          const activeChain = selectedChain || 'PolygonAmoy';
+          const contractAddress = contractAddresses[activeChain];
+
           if (!contractAddress) {
-            console.error(`Contract address not found for ${selectedChain}`);
+            console.error(`Contract address not found for ${activeChain}`);
             return;
           }
+          console.log(`Using contract address: ${contractAddress} for chain: ${activeChain}`);
           const contract = new Contract(contractAddress, OnChainFDIC.abi, signer);
           setFdicContract(contract);
         } catch (error) {
