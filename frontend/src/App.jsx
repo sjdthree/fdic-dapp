@@ -67,6 +67,7 @@ function MainApp() {
       {/* Network Selector */}
       <div className="network-section">
         <h2><FontAwesomeIcon icon={faNetworkWired} /> Select Network</h2>
+        <h2> *** NOTE ONLY POLYGON AMOY TESTNET IS ACTIVE CURRENTLY *** </h2>
         <div className="network-selector">
           <label htmlFor="network-select">Network:</label>
           <select id="network-select" value={selectedChain} onChange={handleChainChange}>
