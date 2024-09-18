@@ -51,6 +51,10 @@ const WalletInfo = () => {
       </div>
       <p>Account: {account} </p>
       <p>Balance: {balance} ETH</p>
+      {/* Refresh button to manually fetch updated account and balance */}
+      <button onClick={fetchWalletInfo} disabled={isRefreshing}>
+        {isRefreshing ? "Refreshing..." : "Refresh Wallet Info"}
+      </button>
     </div>
   );
 };

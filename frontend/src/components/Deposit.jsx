@@ -10,7 +10,6 @@ import { parseEther, isAddress } from 'ethers';
 const Deposit = () => {
   const fdicContract = useFDICContract();
   const [bankAddress, setBankAddress] = useState('');
-  const [amount, setAmount] = useState('');
   const [depositAmount, setDepositAmount] = useState('');
 
   const [isLoading, setIsLoading] = useState(false);
@@ -28,14 +27,16 @@ const Deposit = () => {
       alert('Please enter a valid Ethereum address for the bank.');
       return;
     }
-    if (!amount.trim() || isNaN(amount) || parseFloat(amount) <= 0) {
-      alert('Please enter a valid amount.');
+    const numericAmount = parseFloat(depositAmount); // Convert to a number
+    alert('amount: ' + depositAmount + ' end of amount');
+    if (!depositAmount.trim() || isNaN(numericAmount) || numericAmount <= 0) {
+      alert('Please enter a valid amount.' + depositAmount);
       return;
     }
     try {
       setIsLoading(true);
       const tx = await fdicContract.deposit(bankAddress, {
-        value: parseEther(amount),
+        value: parseEther(depositAmount),
       });
       await tx.wait();
       setIsLoading(false);
