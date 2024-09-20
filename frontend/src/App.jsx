@@ -1,13 +1,11 @@
-// src/App.js
 import React, { useContext } from 'react';
 import { BlockchainProvider, BlockchainContext } from './BlockchainProvider';
-import { chainConfig } from './chainConfig'; // Import the chainConfig
 import Deposit from './components/Deposit';
 import ClaimInsurance from './components/ClaimInsurance';
+import NavBar from './NavBar'; // Import the new NavBar component
 import './App.css';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faNetworkWired, faMoneyCheckAlt, faShieldAlt } from '@fortawesome/free-solid-svg-icons';
-import WalletInfo from "./WalletInfo";
+import { faNetworkWired } from '@fortawesome/free-solid-svg-icons';
 
 function App() {
   return (
@@ -18,43 +16,31 @@ function App() {
 }
 
 function MainApp() {
-  const {
-    provider,
-    login,
-    logout,
-    loggedIn,
-    isLoading,
-    selectedChain,
-    handleChainChange,
-  } = useContext(BlockchainContext);
+  const { isLoading } = useContext(BlockchainContext);
+
 
   if (isLoading) {
     return <div className="loading">Loading...</div>;
   }
 
-  // Dynamically create chainOptions from chainConfig
-  const chainOptions = Object.entries(chainConfig).map(([key, config]) => ({
-    value: key,
-    label: config.displayName,
-  }));
 
-
-  const needsLogin = selectedChain !== 'Ganache';
 
   return (
     <div className="app-container">
-    {/* Header Section */}
-    <header className="app-header">
-    <div className="App">
-      <h1>On-Chain FDIC Insurance DApp</h1>
-    </div>
-      <p className="app-description">
-        Protect your digital assets with decentralized FDIC-like insurance. Choose a network, deposit funds, and
-        claim insurance when needed.
-      </p>
-      <img className="header-image" src="/assets/insurance.png" alt="Insurance Security" />
-    </header>
+      {/* Top Navigation Bar */}
+      <NavBar />
+
+      {/* Header Section */}
+      <header className="app-header">
+        <h1>On-Chain FDIC Insurance DApp</h1>
+        <p className="app-description">
+          Protect your digital assets with decentralized FDIC-like insurance. Choose a network, deposit funds, and
+          claim insurance when needed.
+        </p>
+        <img className="header-image" src="/assets/insurance.png" alt="Insurance Security" />
+      </header>
       
+      {/* Intro Section */}
       <section className="info-section">
         <p>
           Welcome to the On-Chain FDIC Insurance DApp. This decentralized application simulates 
@@ -68,44 +54,14 @@ function MainApp() {
         </p>
       </section>
 
-      {/* Network Selector */}
-      <div className="network-selector">
-        <h2><FontAwesomeIcon icon={faNetworkWired} /> Select Network</h2>
-        <h2> *** NOTE ONLY POLYGON AMOY TESTNET IS ACTIVE CURRENTLY *** </h2>
-        <div className="network-selector">
-          <label htmlFor="network-select">Network:</label>
-          <select id="network-select" value={selectedChain} onChange={handleChainChange}>
-            {chainOptions.map((chain) => (
-              <option key={chain.value} value={chain.value}>
-                {chain.label}
-              </option>
-            ))}
-          </select>
-          <p>This simulates the environment in which your bank operates.</p>
-        </div>
-      </div>
 
       {/* Action Section */}
       <div className="action-section">
-        <div className="deposit-claim-container">
-      {provider ? (
-        <>
-          <div className="actions">
-                <Deposit />
-                <ClaimInsurance />
-          </div>
-          <WalletInfo />
-          {needsLogin && <button onClick={logout}>Logout</button>}
-        </>
-      ) : (
-        <>
-          <button onClick={login}>
-            {needsLogin ? 'Login' : 'Connect to Ganache'}
-          </button>
-        </>
-      )}
-    </div>
-    </div>
+        <div className="actions">
+          <Deposit />
+          <ClaimInsurance />
+        </div>
+      </div>
     </div>
   );
 }
