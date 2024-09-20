@@ -1,59 +1,70 @@
+/* Wallet Info Container */
 .wallet-info-container {
-  padding: 15px;
-  background-color: #f9f9f9;
-  border-radius: 8px;
-  border: 1px solid #ddd;
-  max-width: 600px;
-  margin: 20px auto;
+  position: relative;
+  display: inline-block;
+  z-index: 1; /* Ensure it's above other elements */
+    /* Suggested fix: Add a max-width to prevent overflow */
+    max-width: 300px;
 }
 
-.wallet-info-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  cursor: pointer;
-}
-
-.toggle-button {
-  padding: 10px;
-  font-size: 14px;
-  background-color: #007bff;
-  color: white;
+/* Wallet Dropdown Button */
+.wallet-dropdown {
+  position: relative;
+  background-color: #1a1a2e;
+  color: #ffffff;
+  padding: 10px 20px;
   border: none;
-  border-radius: 4px;
+  border-radius: 6px;
+  font-size: 1rem;
   cursor: pointer;
   transition: background-color 0.3s ease;
 }
 
-.toggle-button:hover {
-  background-color: #0056b3;
+.wallet-dropdown:hover {
+  background-color: #333a56;
 }
 
+/* Dropdown Box */
 .wallet-info-box {
-  max-height: 0;
-  overflow: hidden;
-  transition: max-height 0.4s ease-out;
-  background-color: #fff;
-  border-top: 1px solid #ddd;
-  margin-top: 10px;
-  padding: 0 10px;
-}
 
-.wallet-info-box.open {
-  max-height: 500px; /* Adjust based on how much content is inside */
-  padding: 10px;
-}
-
-.wallet-info-box.closed {
-  padding: 0;
-}
-
-pre {
-  white-space: pre-wrap;
-  word-wrap: break-word;
-  background-color: #f1f1f1;
-  padding: 10px;
+  top: 45px; /* Position dropdown below the button */
+  left: 0; /* Align dropdown with the button */
+  background-color: #ffffff;
+  color: #333;
   border-radius: 8px;
-  margin: 10px 0;
-  font-size: 14px;
+  padding: 10px 20px;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+  z-index: 10;
+  width: 250px;
+  max-width: 100%; /* Ensure it doesn't overflow out of the screen */
+  text-align: left;
+  word-wrap: break-word;
+  overflow-wrap: break-word;
+}
+
+.wallet-info-box p {
+  margin: 0;
+  padding: 5px 0;
+  font-size: 0.9rem;
+}
+
+/* Wallet Address and Balance */
+.wallet-address,
+.wallet-balance {
+  color: #333;
+}
+
+.wallet-empty {
+  color: #ff6b6b;
+  font-size: 0.9rem;
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+  .wallet-info-box {
+    position: relative; /* Change to relative for smaller screens */
+    width: 100%;
+    left: 0;
+    top: auto; /* Remove fixed top for better alignment on small screens */
+  }
 }

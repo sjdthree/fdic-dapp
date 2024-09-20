@@ -1,60 +1,53 @@
-// src/WalletInfo.jsx
-import React, { useContext, useEffect, useState } from "react";
-import { BlockchainContext } from "./BlockchainProvider";
-import { getAccounts, getBalance } from "./web3tools";
+import React, { useContext, useState, useEffect } from 'react';
+import { BlockchainContext } from './BlockchainProvider';
+import { ethers } from 'ethers';
 import './WalletInfo.css';
 
 const WalletInfo = () => {
+  const { provider } = useContext(BlockchainContext);
+  const [account, setAccount] = useState('');
+  const [balance, setBalance] = useState('');
   const [isOpen, setIsOpen] = useState(false);
-  const { provider, loggedIn, userInfo } = useContext(BlockchainContext);
-  const [account, setAccount] = useState(null);
-  const [balance, setBalance] = useState(null);
-  const [isRefreshing, setIsRefreshing] = useState(false);
 
-  const toggleOpen = () => {
+  const toggleDropdown = () => {
     setIsOpen(!isOpen);
   };
 
-  const fetchWalletInfo = async () => {
-    if (loggedIn && provider) {
-      setIsRefreshing(true);
-      const userAccount = await getAccounts(provider);
-      const userBalance = await getBalance(provider);
-      setAccount(userAccount);
-      setBalance(userBalance);
-      setIsRefreshing(false);
-    }
-  };
-
-  // Fetch wallet info when the component mounts
   useEffect(() => {
-    fetchWalletInfo();
-  }, [provider, loggedIn]);
+    const fetchWalletInfo = async () => {
+      if (provider) {
+        try {
+          const signer = await provider.getSigner();
+          const address = await signer.getAddress();
+   
+          const balanceInWei = await provider.getBalance(address); // Balance in wei
 
-  if (!loggedIn) {
-    return <div>Please log in to view wallet info.</div>;
-  }
+          // Convert balance from wei to Ether
+          const balanceInEther = ethers.formatEther(balanceInWei);
+
+          setAccount(address);
+          setBalance(parseFloat(balanceInEther).toFixed(4)); // Display up to 4 decimal places
+
+        } catch (error) {
+          console.error('Error fetching wallet info:', error);
+        }
+      }
+    };
+
+    fetchWalletInfo();
+  }, [provider]);
 
   return (
-    <div className="wallet-info-container">
-      <h3>Wallet Information</h3>
-
-      <div className="wallet-info-header" onClick={toggleOpen}>
-        <button className="toggle-button">
-          {isOpen ? 'Hide User Details' : 'Show User Details'}
-        </button>
-      </div>
-
-      <div className={`wallet-info-box ${isOpen ? 'open' : 'closed'}`}>
-        <pre>{JSON.stringify(userInfo, null, 2)}</pre>
-
-      </div>
-      <p>Account: {account} </p>
-      <p>Balance: {balance} ETH</p>
-      {/* Refresh button to manually fetch updated account and balance */}
-      <button onClick={fetchWalletInfo} disabled={isRefreshing}>
-        {isRefreshing ? "Refreshing..." : "Refresh Wallet Info"}
+    <div className="wallet-dropdown">
+      <button onClick={toggleDropdown} className="wallet-dropdown-btn">
+        {account ? 'Wallet Info' : 'No Wallet Connected'}
       </button>
+      {isOpen && account && (
+        <div className="wallet-info-box">
+          <p className="wallet-address"><strong>Address:</strong> {account}</p>
+          <p className="wallet-balance"><strong>Balance:</strong> {balance} ETH</p>
+        </div>
+      )}
     </div>
   );
 };
