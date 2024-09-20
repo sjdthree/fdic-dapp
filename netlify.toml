@@ -1,5 +1,5 @@
 [build]
-  publish = "frontend/dist" # or "build" if you are using Create React App
+  publish = "dist"
   command = "yarn build"
 
 [[redirects]]
