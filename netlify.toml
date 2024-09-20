@@ -1,0 +1,8 @@
+[build]
+  publish = "frontend/dist" # or "build" if you are using Create React App
+  command = "yarn build"
+
+[[redirects]]
+  from = "/*"
+  to = "/index.html"
+  status = 200
