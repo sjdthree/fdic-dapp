@@ -127,3 +127,13 @@ button:hover {
   border: 1px solid red;
   border-radius: 5px;
 }
+
+.greyed-out {
+  opacity: 0.5;
+  pointer-events: none; /* Disable clicks and other interactions */
+}
+
+.warning {
+  color: red;
+  font-weight: bold;
+}

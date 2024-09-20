@@ -1,7 +1,9 @@
 import React, { useContext } from 'react';
+import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
 import { BlockchainProvider, BlockchainContext } from './BlockchainProvider';
 import Deposit from './components/Deposit';
 import ClaimInsurance from './components/ClaimInsurance';
+import RegulatorPanel from './components/RegulatorPanel';
 import NavBar from './NavBar'; // Import the new NavBar component
 import './App.css';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
@@ -10,7 +12,12 @@ import { faNetworkWired } from '@fortawesome/free-solid-svg-icons';
 function App() {
   return (
     <BlockchainProvider>
-      <MainApp />
+      <Router>
+        <Routes>
+          <Route path="/" element={<MainApp />} />
+          <Route path="/regulator" element={<RegulatorPanel />} />
+        </Routes>
+      </Router>
     </BlockchainProvider>
   );
 }
