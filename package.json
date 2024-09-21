@@ -14,20 +14,21 @@
     "truffle": "^5.11.5"
   },
   "dependencies": {
+    "@truffle/hdwallet-provider": "^2.1.15",
     "@web3auth/ethereum-provider": "^8.12.4",
     "@web3auth/modal": "^8.12.7",
     "assert": "^2.1.0",
     "buffer": "^6.0.3",
     "crypto-browserify": "^3.12.0",
     "ethers": "^6.13.2",
+    "ganache-cli": "^6.12.2",
     "https-browserify": "^1.0.0",
+    "kill-port": "^1.6.1",
     "os-browserify": "^0.3.0",
     "process": "^0.11.10",
     "stream-browserify": "^3.0.0",
     "stream-http": "^3.2.0",
     "url": "^0.11.4",
-    "ganache-cli": "^6.12.2",
-    "wait-on": "^6.0.1",
-    "kill-port": "^1.6.1"
+    "wait-on": "^6.0.1"
   }
 }
