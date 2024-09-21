@@ -3,6 +3,9 @@
 /* Global box-sizing reset */
 *, *::before, *::after {
   box-sizing: border-box;
+  margin-top: 5px;
+  margin-left: 5px;
+  margin-right: 5px;
 }
 
 /* General Styles */

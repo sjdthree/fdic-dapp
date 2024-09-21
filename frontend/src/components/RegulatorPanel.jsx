@@ -2,6 +2,7 @@ import React, { useState, useContext, useEffect } from 'react';
 import { BlockchainContext } from '../BlockchainProvider';
 import { ethers } from 'ethers';
 import OnChainFDIC from '../abis/OnChainFDIC.json';
+import Navbar from '../NavBar';
 import './RegulatorPanel.css';
 
 const correctRegulatorWallet = '0xYourRegulatorWalletAddress'; // Replace with actual wallet address
@@ -9,11 +10,24 @@ const correctRegulatorWallet = '0xYourRegulatorWalletAddress'; // Replace with a
 const RegulatorPanel = () => {
   const { provider, account } = useContext(BlockchainContext);
   const [contract, setContract] = useState(null);
+  const [creator, setCreator] = useState('');
   const [newBankAddress, setNewBankAddress] = useState('');
   const [bankToFail, setBankToFail] = useState('');
   const [insurancePoolBalance, setInsurancePoolBalance] = useState('');
   const [error, setError] = useState('');
   const [isCorrectWallet, setIsCorrectWallet] = useState(false);
+  
+  // Function to get contract creator (regulator)
+  const getContractCreator = async (contractAddress) => {
+    try {
+      const txHash = await provider.getTransactionReceipt(contractAddress);
+      const txDetails = await provider.getTransaction(txHash.transactionHash);
+      return txDetails.from; // Creator address
+    } catch (error) {
+      console.error('Error fetching contract creator:', error);
+      return null;
+    }
+  };
 
   useEffect(() => {
     if (account && account.toLowerCase() === correctRegulatorWallet.toLowerCase()) {
@@ -23,13 +37,23 @@ const RegulatorPanel = () => {
     }
   }, [account]);
 
-  // Initialize contract and check for correct wallet
   useEffect(() => {
     const initContract = async () => {
       if (provider && account) {
         const signer = provider.getSigner();
         const fdicContract = new ethers.Contract(OnChainFDIC.address, OnChainFDIC.abi, signer);
         setContract(fdicContract);
+
+        // Fetch the contract creator (regulator's wallet)
+        const contractCreator = await getContractCreator(OnChainFDIC.address);
+        setCreator(contractCreator);
+
+        // Check if the current account matches the contract creator (regulator)
+        if (account.toLowerCase() === contractCreator.toLowerCase()) {
+          setIsCorrectWallet(true);
+        } else {
+          setIsCorrectWallet(false);
+        }
       }
     };
 
@@ -96,8 +120,15 @@ const RegulatorPanel = () => {
   }
 
   return (
+    <>
+      <Navbar creator={creator} />
     <div className="regulator-panel">
       <h2>Regulator Panel</h2>
+
+      <div className="wallet-info">
+        <p>Contract Creator (Regulator): {creator}</p>
+      </div>
+
 
       {/* Insurance Pool Balance */}
       <div className="pool-balance">
@@ -105,37 +136,37 @@ const RegulatorPanel = () => {
         <p>{insurancePoolBalance} ETH</p>
       </div>
 
-      {/* Register Bank */}
-      <div className="register-bank">
-        <h3>Register a Bank</h3>
-        <input
-          type="text"
-          placeholder="Enter Bank Address"
-          value={newBankAddress}
-          onChange={(e) => setNewBankAddress(e.target.value)}
-          disabled={!isCorrectWallet}
-        />
-        <button onClick={registerBank}>Register Bank</button>
+      <div className="wallet-info">
+        <p>Contract Creator (Regulator): {creator}</p>
       </div>
+        {/* Register Bank */}
+        <div className={isCorrectWallet ? 'register-bank' : 'register-bank disabled'}>
+          <h3>Register a Bank</h3>
+          <input
+            type="text"
+            placeholder="Enter Bank Address"
+            value={newBankAddress}
+            onChange={(e) => setNewBankAddress(e.target.value)}
+            disabled={!isCorrectWallet}
+          />
+          <button onClick={registerBank} disabled={!isCorrectWallet}>Register Bank</button>
+        </div>
 
-      {/* Fail Bank */}
-      <div className="fail-bank">
-        <h3>Mark Bank as Failed</h3>
-        <input
-          type="text"
-          placeholder="Enter Bank Address"
-          value={bankToFail}
-          onChange={(e) => setBankToFail(e.target.value)}
-          disabled={!isCorrectWallet}
-        />
-        <button onClick={failBank}>Fail Bank</button>
-      </div>
-      {!isCorrectWallet && (
-      <div className="warning-message">
-      <p>You are connected with the wrong wallet. Please connect with the regulator's wallet: {correctRegulatorWallet}</p>
-            </div>
-        )}
+        {/* Fail Bank */}
+        <div className={isCorrectWallet ? 'fail-bank' : 'fail-bank disabled'}>
+          <h3>Mark Bank as Failed</h3>
+          <input
+            type="text"
+            placeholder="Enter Bank Address"
+            value={bankToFail}
+            onChange={(e) => setBankToFail(e.target.value)}
+            disabled={!isCorrectWallet}
+          />
+          <button onClick={failBank} disabled={!isCorrectWallet}>Fail Bank</button>
+        </div>
+
     </div>
+    </>
   );
 };
 
