@@ -1,4 +1,5 @@
 import React, { useContext } from 'react';
+import { ThemeProvider, createTheme } from '@mui/material/styles';
 import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
 import { BlockchainProvider, BlockchainContext } from './BlockchainProvider';
 import Deposit from './components/Deposit';
@@ -6,19 +7,99 @@ import ClaimInsurance from './components/ClaimInsurance';
 import RegulatorPanel from './components/RegulatorPanel';
 import NavBar from './NavBar'; // Import the new NavBar component
 import './App.css';
-import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faNetworkWired } from '@fortawesome/free-solid-svg-icons';
+const theme = createTheme({
+  palette: {
+    primary: {
+      main: '#1a237e',  // Dark blue for the top bar and other primary elements
+    },
+    secondary: {
+      main: '#03a9f4',  // Light blue for buttons and highlights
+    },
+    background: {
+      default: '#f5f5f5',  // Soft gray background for the entire app
+      paper: '#ffffff',  // White background for form elements
+    },
+    text: {
+      primary: '#212121',  // Dark text for contrast in light sections
+      secondary: '#ffffff',  // White text for buttons and dark background elements
+    },
+  },
+  typography: {
+    fontFamily: '"Roboto", "Helvetica", "Arial", sans-serif',
+    fontSize: 14,
+    button: {
+      textTransform: 'none',  // No uppercase for buttons for a modern look
+    },
+  },
+  components: {
+    MuiButton: {
+      styleOverrides: {
+        root: {
+          color: '#ffffff',  // White text for buttons
+          backgroundColor: '#0d47a1',  // Light blue button background
+          '&:hover': {
+            backgroundColor: '#0288d1',  // Slightly darker blue on hover
+          },
+          borderRadius: '8px',  // Rounded buttons
+        },
+      },
+    },
+    MuiAppBar: {
+      styleOverrides: {
+        root: {
+          backgroundColor: '#1a237e',  // Dark blue top bar
+        },
+      },
+    },
+    MuiSelect: {
+      styleOverrides: {
+        select: {
+          color: '#212121',  // Dark text for dropdown options to contrast white background
+          backgroundColor: '#ffffff',  // White background for dropdowns
+        },
+        icon: {
+          color: '#212121',  // Dark icon for the dropdown arrow
+        },
+      },
+    },
+    MuiInputBase: {
+      styleOverrides: {
+        root: {
+          backgroundColor: '#ffffff',  // White background for input fields
+          color: '#212121',  // Dark text for contrast
+        },
+      },
+    },
+    MuiMenuItem: {
+      styleOverrides: {
+        root: {
+          color: '#212121',  // Dark text for dropdown menu items
+        },
+      },
+    },
+    MuiPaper: {
+      styleOverrides: {
+        root: {
+          backgroundColor: '#ffffff',  // White background for dropdowns and menus
+        },
+      },
+    },
+  },
+});
 
 function App() {
   return (
-    <BlockchainProvider>
-      <Router>
-        <Routes>
-          <Route path="/" element={<MainApp />} />
-          <Route path="/regulator" element={<RegulatorPanel />} />
-        </Routes>
-      </Router>
-    </BlockchainProvider>
+    <ThemeProvider theme={theme}>
+      <BlockchainProvider>
+        <Router>
+          <NavBar /> {/* Add NavBar here to be available on all routes */}
+          <Routes>
+            <Route path="/" element={<MainApp />} />
+            <Route path="/regulator" element={<RegulatorPanel />} />
+          </Routes>
+        </Router>
+      </BlockchainProvider>
+    </ThemeProvider>
   );
 }
 
@@ -34,8 +115,6 @@ function MainApp() {
 
   return (
     <div className="app-container">
-      {/* Top Navigation Bar */}
-      <NavBar />
 
       {/* Header Section */}
       <header className="app-header">

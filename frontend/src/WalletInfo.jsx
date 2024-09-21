@@ -1,33 +1,21 @@
 import React, { useContext, useState, useEffect } from 'react';
 import { BlockchainContext } from './BlockchainProvider';
+import { Box, Typography, Card, Button } from '@mui/material';
 import { ethers } from 'ethers';
-import './WalletInfo.css';
+
 
 const WalletInfo = () => {
-  const { provider } = useContext(BlockchainContext);
-  const [account, setAccount] = useState('');
+  const { provider, account } = useContext(BlockchainContext);
   const [balance, setBalance] = useState('');
-  const [isOpen, setIsOpen] = useState(false);
 
-  const toggleDropdown = () => {
-    setIsOpen(!isOpen);
-  };
 
   useEffect(() => {
     const fetchWalletInfo = async () => {
-      if (provider) {
+      if (provider && account) {
         try {
-          const signer = await provider.getSigner();
-          const address = await signer.getAddress();
-   
-          const balanceInWei = await provider.getBalance(address); // Balance in wei
-
-          // Convert balance from wei to Ether
-          const balanceInEther = ethers.formatEther(balanceInWei);
-
-          setAccount(address);
-          setBalance(parseFloat(balanceInEther).toFixed(4)); // Display up to 4 decimal places
-
+          const balanceInWei = await provider.getBalance(account);  // Fetch balance in wei
+          const balanceInEther = ethers.formatEther(balanceInWei);  // Convert balance to ether
+          setBalance(parseFloat(balanceInEther).toFixed(4));  // Display up to 4 decimal places
         } catch (error) {
           console.error('Error fetching wallet info:', error);
         }
@@ -35,21 +23,37 @@ const WalletInfo = () => {
     };
 
     fetchWalletInfo();
-  }, [provider]);
+  }, [provider, account]);  // Run effect when provider or account changes
 
   return (
-    <div className="wallet-dropdown">
-      <button onClick={toggleDropdown} className="wallet-dropdown-btn">
-        {account ? 'Wallet Info' : 'No Wallet Connected'}
-      </button>
-      {isOpen && account && (
-        <div className="wallet-info-box">
-          <p className="wallet-address"><strong>Address:</strong> {account}</p>
-          <p className="wallet-balance"><strong>Balance:</strong> {balance} ETH</p>
-        </div>
+    <Card sx={{ padding: 2, backgroundColor: '#f5f5f5', borderRadius: 2, boxShadow: 3 }}>
+      {account ? (
+        <Box>
+          <Typography variant="h6" component="div" sx={{ fontWeight: 'bold' }}>
+            Wallet Information
+          </Typography>
+          <Typography variant="body1" component="div">
+            <strong>Address:</strong> {account}
+          </Typography>
+          <Typography variant="body1" component="div">
+            <strong>Balance:</strong> {balance} ETH
+          </Typography>
+          <Button 
+            variant="outlined" 
+            sx={{ marginTop: 2 }} 
+            onClick={() => window.location.reload()}  // Reload for refreshing wallet info
+          >
+            Refresh
+          </Button>
+        </Box>
+      ) : (
+        <Typography variant="body2" color="textSecondary">
+          No Wallet Connected
+        </Typography>
       )}
-    </div>
+    </Card>
   );
 };
+
 
 export default WalletInfo;

@@ -3,21 +3,17 @@ import React, { createContext, useState, useEffect } from "react";
 import { CHAIN_NAMESPACES } from "@web3auth/base";
 import { EthereumPrivateKeyProvider } from "@web3auth/ethereum-provider";
 import { Web3Auth } from "@web3auth/modal";
-// import { chainConfig } from './chainConfig'; // Import the chainConfig
 import { OpenloginAdapter } from "@web3auth/openlogin-adapter";
 import { ethers } from "ethers";
 
 export const BlockchainContext = createContext();
 
 const clientId = import.meta.env.VITE_WEB3AUTH_CLIENT_ID; // Your Web3Auth Client ID from the dashboard
-console.log("Client ID:", clientId);
 
 const chainConfig = {
   chainNamespace: CHAIN_NAMESPACES.EIP155,
   chainId: "0x13882", // hex of 80002, polygon testnet
   rpcTarget: "https://rpc.ankr.com/polygon_amoy",
-  // Avoid using public rpcTarget in production.
-  // Use services like Infura, Quicknode etc
   displayName: "Polygon Amoy Testnet",
   blockExplorerUrl: "https://amoy.polygonscan.com/",
   ticker: "MATIC",
@@ -27,6 +23,7 @@ const chainConfig = {
 
 export const BlockchainProvider = ({ children }) => {
   const [provider, setProvider] = useState(null);
+  const [account, setAccount] = useState(''); 
   const [web3auth, setWeb3Auth] = useState(null);
   const [isLoading, setIsLoading] = useState(true);
   const [loggedIn, setLoggedIn] = useState(false);
@@ -35,6 +32,7 @@ export const BlockchainProvider = ({ children }) => {
   useEffect(() => {
     const initWeb3Auth = async () => {
       try {
+        console.log("Initializing Web3Auth...");
         const privateKeyProvider = new EthereumPrivateKeyProvider({
           config: { chainConfig: chainConfig },
         });
@@ -50,7 +48,7 @@ export const BlockchainProvider = ({ children }) => {
             uxMode: "popup",
             loginSettings: {
               mfaLevel: "optional",  // Modify this as necessary
-           },
+            },
           },
         });
 
@@ -59,16 +57,21 @@ export const BlockchainProvider = ({ children }) => {
         setWeb3Auth(web3auth);
 
         if (web3auth.connected) {
+          console.log("Web3Auth is connected");
           const ethersProvider = new ethers.BrowserProvider(web3auth.provider);
           setProvider(ethersProvider);
+          const signer = await ethersProvider.getSigner();
+          const address = await signer.getAddress();  // Fetch the account address
+          setAccount(address);  // Set the account in state
+
           const user = await web3auth.getUserInfo(); // Get user info after login
           setUserInfo(user); // Store user info in state
-          console.log("User Info:", user);
           setLoggedIn(true);
-  
+          console.log("User info:", user);
+        } else {
+          console.log("Web3Auth not connected");
         }
 
-     
         setIsLoading(false);
       } catch (error) {
         console.error("Error initializing Web3Auth:", error);
@@ -80,16 +83,18 @@ export const BlockchainProvider = ({ children }) => {
   }, []);
 
   const login = async () => {
-
-
     try {
+      console.log("Attempting to login...");
       const web3authProvider = await web3auth.connect(); // Initiates Web3Auth modal for login
       const ethersProvider = new ethers.BrowserProvider(web3auth.provider);
       setProvider(ethersProvider);
+      const signer = await ethersProvider.getSigner();
+      const address = await signer.getAddress();  // Fetch the account address
+      setAccount(address);  // Set the account
       setLoggedIn(true);
       const user = await web3auth.getUserInfo();
       setUserInfo(user);
-
+      console.log("Login successful. User info:", user);
     } catch (error) {
       console.error("Login failed:", error);
     }
@@ -102,9 +107,12 @@ export const BlockchainProvider = ({ children }) => {
     }
 
     try {
+      console.log("Logging out...");
       await web3auth.logout();
       setProvider(null);
+      setAccount('');  // Reset the account
       setLoggedIn(false);
+      console.log("Logout successful.");
     } catch (error) {
       console.error("Logout failed:", error);
     }
@@ -114,6 +122,7 @@ export const BlockchainProvider = ({ children }) => {
     <BlockchainContext.Provider
       value={{
         provider,
+        account,
         loggedIn,
         userInfo,
         isLoading,
@@ -121,7 +130,7 @@ export const BlockchainProvider = ({ children }) => {
         logout,
       }}
     >
-      {children}
+      {!isLoading ? children : <p>Loading blockchain info...</p>}
     </BlockchainContext.Provider>
   );
 };

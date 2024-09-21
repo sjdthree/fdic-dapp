@@ -4,7 +4,6 @@ if (!infuraID) {
   console.error("Infura Project ID is not defined. Make sure VITE_INFURA_PROJECT_ID is set in your .env file.");
 }
 
-console.log("Infura ID:", infuraID);
 
 export const chainConfig = {
   Ethereum: {
