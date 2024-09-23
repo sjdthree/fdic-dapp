@@ -5,21 +5,19 @@ import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faMoneyCheckAlt } from '@fortawesome/free-solid-svg-icons';
 
 import { useFDICContract } from '../useFDICContract';
-import { parseEther, isAddress } from 'ethers';
+import { parseEther, isAddress, ethers } from 'ethers';
 
 const Deposit = () => {
   const fdicContract = useFDICContract();
   const [bankAddress, setBankAddress] = useState('');
   const [depositAmount, setDepositAmount] = useState('');
+  const [tokenAddress, setTokenAddress] = useState('');
   const [error, setError] = useState(null); // Error state
 
   const INSURANCE_LIMIT = 250000; // 250,000 ETH insurance limit
 
   const [isLoading, setIsLoading] = useState(false);
 
-  if (!fdicContract) {
-    return <div>Please log in to make a deposit.</div>;
-  }
 
   const handleDeposit = async () => {
     setError(null); // Clear previous errors
@@ -47,12 +45,11 @@ const Deposit = () => {
     }
     try {
       setIsLoading(true);
-      const tx = await fdicContract.deposit(bankAddress, {
-        value: parseEther(depositAmount),
-      });
+      const amountInWei = ethers.parseUnits(depositAmount, 18); // Assuming the token has 18 decimals
+      const tx = await fdicContract.deposit(bankAddress, tokenAddress, amountInWei);
       await tx.wait();
+      alert(`Deposit successful: ${depositAmount} tokens to ${bankAddress}`);
       setIsLoading(false);
-      alert('Deposit successful!');
     } catch (error) {
       setIsLoading(false);
       console.error(error);
@@ -98,6 +95,19 @@ const Deposit = () => {
         <p>
           The blockchain address of the bank where you want to deposit your 
           funds. Think of this as the bank’s unique identifier on the blockchain.
+        </p>
+      </label>
+      <label>
+        <strong>Token Address:</strong>
+        <input
+          type="text"
+          value={tokenAddress}
+          onChange={(e) => setTokenAddress(e.target.value)}
+          placeholder="Enter the ERC20 Token's blockchain address"
+        />
+        <p>
+          The address of the token to deposit your 
+          funds. Think of this as the currency you want to deposit.
         </p>
       </label>
       <div className="form-group">

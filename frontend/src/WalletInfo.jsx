@@ -1,13 +1,15 @@
 import React, { useContext, useState, useEffect } from 'react';
 import { BlockchainContext } from './BlockchainProvider';
-import { Box, Typography, Card, Button } from '@mui/material';
+import { Box, Typography, Card, Button, IconButton, Tooltip } from '@mui/material';
+import ContentCopyIcon from '@mui/icons-material/ContentCopy';
+
 import { ethers } from 'ethers';
 
 
 const WalletInfo = () => {
   const { provider, account } = useContext(BlockchainContext);
   const [balance, setBalance] = useState('');
-
+  const [copySuccess, setCopySuccess] = useState(false);  // Track copy success
 
   useEffect(() => {
     const fetchWalletInfo = async () => {
@@ -25,6 +27,18 @@ const WalletInfo = () => {
     fetchWalletInfo();
   }, [provider, account]);  // Run effect when provider or account changes
 
+  const handleCopy = async () => {
+    if (account) {
+      try {
+        await navigator.clipboard.writeText(account);
+        setCopySuccess(true);
+        setTimeout(() => setCopySuccess(false), 2000);  // Reset after 2 seconds
+      } catch (err) {
+        console.error('Failed to copy address:', err);
+      }
+    }
+  };
+
   return (
     <Card sx={{ padding: 2, backgroundColor: '#f5f5f5', borderRadius: 2, boxShadow: 3 }}>
       {account ? (
@@ -32,10 +46,17 @@ const WalletInfo = () => {
           <Typography variant="h6" component="div" sx={{ fontWeight: 'bold' }}>
             Wallet Information
           </Typography>
-          <Typography variant="body1" component="div">
-            <strong>Address:</strong> {account}
-          </Typography>
-          <Typography variant="body1" component="div">
+          <Box sx={{ display: 'flex', alignItems: 'center', marginTop: 1 }}>
+            <Typography variant="body1" component="div">
+              <strong>Address:</strong> {account.slice(0, 6)}...{account.slice(-4)}
+            </Typography>
+            <Tooltip title={copySuccess ? 'Copied!' : 'Copy Address'} sx={{ marginLeft: 1 }}>
+              <IconButton onClick={handleCopy}>
+                <ContentCopyIcon />
+              </IconButton>
+            </Tooltip>
+          </Box>
+          <Typography variant="body1" component="div" sx={{ marginTop: 1 }}>
             <strong>Balance:</strong> {balance} ETH
           </Typography>
           <Button 

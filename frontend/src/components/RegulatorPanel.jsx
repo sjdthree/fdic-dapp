@@ -14,6 +14,7 @@ const RegulatorPanel = () => {
   const [newBankAddress, setNewBankAddress] = useState('');
   const [bankToFail, setBankToFail] = useState('');
   const [insurancePoolBalance, setInsurancePoolBalance] = useState('0');
+  const [newRegulatorAddress, setNewRegulatorAddress] = useState('');
   const [isCorrectWallet, setIsCorrectWallet] = useState(false);
 
   // Check if the connected account is the correct regulator wallet
@@ -82,7 +83,17 @@ const RegulatorPanel = () => {
       alert('Bank registration failed.');
     }
   };
-
+  // Add a new regulator
+  const handleAddRegulator = async () => {
+    try {
+      const tx = await contract.addRegulator(newRegulatorAddress);
+      await tx.wait();
+      alert(`Regulator ${newRegulatorAddress} added successfully.`);
+    } catch (error) {
+      console.error('Error adding regulator:', error);
+      alert('Adding regulator failed.');
+    }
+  };
   // Mark a bank as failed
   const failBank = async () => {
     if (!bankToFail) {
@@ -174,6 +185,19 @@ const RegulatorPanel = () => {
               Fail Bank
             </Button>
           </Grid2>
+        </Grid2>
+        <Grid2 item xs={12} md={6}>
+          <TextField
+            label="New Regulator Address"
+            value={newRegulatorAddress}
+            onChange={(e) => setNewRegulatorAddress(e.target.value)}
+            disabled={!isCorrectWallet}
+          />
+        </Grid2>
+        <Grid2 item xs={12} md={6}>
+          <Button variant="contained" onClick={handleAddRegulator} disabled={!isCorrectWallet}>
+            Add Regulator
+          </Button>
         </Grid2>
       </Paper>
     </Box>
