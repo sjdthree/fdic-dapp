@@ -13,7 +13,10 @@
   box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
   box-sizing: border-box;
 }
-
+.navbar-left h1 {
+  margin: 0;
+  font-size: 1.5rem;
+}
 /* Logo */
 .navbar-logo {
   font-size: 1.5rem;
@@ -49,14 +52,15 @@
 }
 
 /* Wallet Dropdown */
+.network-dropdown,
 .wallet-dropdown {
   position: relative;
-  display: inline-block;
   cursor: pointer;
   margin-left: auto;
 }
 
 /* Wallet Dropdown Button */
+.network-dropdown-btn,
 .wallet-dropdown-btn {
   background-color: #333a56;
   color: white;
@@ -111,6 +115,20 @@
   content: ' ▼';
   font-size: 0.7rem;
   margin-left: 5px;
+}
+
+.logout-btn,
+.login-btn {
+  background-color: #20c349;
+  color: white;
+  border: none;
+  padding: 8px 12px;
+  border-radius: 5px;
+  cursor: pointer;
+}
+
+.regulator-info {
+  color: green;
 }
 
 /* Responsive Styling */

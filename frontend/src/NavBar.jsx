@@ -6,13 +6,12 @@ import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faUserCircle } from '@fortawesome/free-solid-svg-icons';
 import './NavBar.css';
 
-const NavBar = () => {
-  const { provider, loggedIn, login, logout, selectedChain, handleChainChange } = useContext(BlockchainContext);
-  const [isDropdownOpen, setIsDropdownOpen] = useState(false);
+const NavBar = ({ creator }) => {
+  const { account, loggedIn, login, logout, selectedChain, handleChainChange } = useContext(BlockchainContext);
+  const [isNetworkOpen, setNetworkOpen] = useState(false);
 
-  const toggleDropdown = () => {
-    setIsDropdownOpen(!isDropdownOpen);
-  };
+  const toggleNetworkDropdown = () => setNetworkOpen(!isNetworkOpen);
+
 
   const defaultNetwork = "PolygonAmoy";
 
@@ -28,41 +27,48 @@ const NavBar = () => {
       <div className="navbar-logo">
         <h2>On-Chain FDIC Insurance DApp</h2>
       </div>
-        {/* Network Selector in Navbar */}
-        <div className="network-selector">
-          <label htmlFor="network-select" className="network-label">Network:</label>
-          <select
-            id="network-select"
-            value={selectedChain}
-            onChange={handleChainChange}
-            className="network-dropdown"
-          >
-            {chainOptions.map((chain) => (
-              <option key={chain.value} value={chain.value} disabled={chain.disabled}>
-                {chain.label}
-              </option>
-            ))}
-          </select>
+        {/* Network Selector */}
+        <div className="network-dropdown">
+          <button onClick={toggleNetworkDropdown} className="network-dropdown-btn">
+            {selectedChain ? `Network: ${selectedChain}` : 'Select Network'}
+          </button>
+          {isNetworkOpen && (
+            <div className="dropdown-menu">
+                <select
+                    id="network-select"
+                    value={selectedChain}
+                    onChange={handleChainChange}
+                    className="network-dropdown"
+                >
+                    {chainOptions.map((chain) => (
+                    <option key={chain.value} value={chain.value} disabled={chain.disabled}>
+                        {chain.label}
+                    </option>
+                    ))}
+                </select>
+            </div>
+          )}
         </div>
 
-      <div className="navbar-links">
-        {loggedIn && provider ? (
-          <div className="navbar-wallet">
-            <div className="profile-container" onClick={toggleDropdown}>
-              <FontAwesomeIcon icon={faUserCircle} className="profile-icon" />
-              <span className="profile-text">Wallet</span>
-              <div className={`wallet-dropdown ${isDropdownOpen ? 'show' : ''}`}>
-                <WalletInfo />
-                <button className="logout-button" onClick={logout}>Logout</button>
-              </div>
+
+        {/* Wallet Info */}
+        <div className="wallet-dropdown">
+        {loggedIn  ? <WalletInfo /> : 'No Wallet Connected'}
+          {loggedIn && (
+            <div className="dropdown-menu">
+              {account === creator ? (
+                <p className="regulator-info"><strong>Regulator</strong> (Contract Creator)</p>
+              ) : (
+                <p className="regulator-info">Not the Regulator</p>
+              )}
+              <button className="logout-btn" onClick={logout}>Logout</button>
             </div>
-          </div>
-        ) : (
-          <button className="login-button" onClick={login}>
-            Login
-          </button>
-        )}
-      </div>
+          )}
+          {!loggedIn && (
+            <button className="login-btn" onClick={login}>Login</button>
+          )}
+        </div>
+ 
     </nav>
   );
 };
