@@ -1,76 +1,74 @@
-import React, { useState, useContext, useEffect } from "react";
-import { BlockchainContext } from "../BlockchainProvider";
-import { ethers } from "ethers";
-import OnChainFDIC from "../abis/OnChainFDIC.json";
-import Navbar from "../NavBar";
-import "./RegulatorPanel.css";
+import React, { useState, useContext, useEffect } from 'react';
+import { BlockchainContext } from '../BlockchainProvider';
+import { ethers } from 'ethers';
+import OnChainFDIC from '../abis/OnChainFDIC.json';
+import { TextField, Button, Typography, Box, Grid2, Alert, Paper } from '@mui/material';
 
-const correctRegulatorWallet = "0x3c565c6bc265ce063bf793f4260918165f598d31"; // Replace with actual wallet address
+const correctRegulatorWallet = '0x07a5d38f4041176d43c3875d8cd0c9f19b1dd072';
+const fdicContractAddress = '0xe97c2190996c7661657a07bD114844b36A9882c2';  // Hardcoded address
 
 const RegulatorPanel = () => {
   const { provider, account } = useContext(BlockchainContext);
   const [contract, setContract] = useState(null);
-  const [creator, setCreator] = useState("");
-  const [newBankAddress, setNewBankAddress] = useState("");
-  const [bankToFail, setBankToFail] = useState("");
-  const [insurancePoolBalance, setInsurancePoolBalance] = useState("");
-  const [error, setError] = useState("");
+  const [creator, setCreator] = useState(correctRegulatorWallet);
+  const [newBankAddress, setNewBankAddress] = useState('');
+  const [bankToFail, setBankToFail] = useState('');
+  const [insurancePoolBalance, setInsurancePoolBalance] = useState('0');
   const [isCorrectWallet, setIsCorrectWallet] = useState(false);
 
-  // Function to get contract creator (regulator)
-  const getContractCreator = async (contractAddress) => {
-    try {
-      const txHash = await provider.getTransactionReceipt(contractAddress);
-      const txDetails = await provider.getTransaction(txHash.transactionHash);
-      return txDetails.from; // Creator address
-    } catch (error) {
-      console.error("Error fetching contract creator:", error);
-      return null;
-    }
-  };
-
+  // Check if the connected account is the correct regulator wallet
   useEffect(() => {
-    if (
-      account &&
-      account.toLowerCase() === correctRegulatorWallet.toLowerCase()
-    ) {
+    if (account && account.toLowerCase() === correctRegulatorWallet.toLowerCase()) {
       setIsCorrectWallet(true);
     } else {
       setIsCorrectWallet(false);
     }
   }, [account]);
 
+  // Initialize contract
   useEffect(() => {
     const initContract = async () => {
       if (provider && account) {
-        const signer = provider.getSigner();
-        const fdicContract = new ethers.Contract(
-          OnChainFDIC.address,
-          OnChainFDIC.abi,
-          signer
-        );
-        setContract(fdicContract);
-
-        // Fetch the contract creator (regulator's wallet)
-        const contractCreator = await getContractCreator(OnChainFDIC.address);
-        setCreator(contractCreator);
-
-        // Check if the current account matches the contract creator (regulator)
-        if (account.toLowerCase() === contractCreator.toLowerCase()) {
-          setIsCorrectWallet(true);
-        } else {
-          setIsCorrectWallet(false);
+        try {
+          console.log('Initializing contract...');
+          const signer = provider.getSigner();  // Use a signer for writing transactions
+          const fdicContract = new ethers.Contract(fdicContractAddress, OnChainFDIC.abi, signer);
+          setContract(fdicContract);
+          console.log('Contract initialized:', fdicContract);
+        } catch (error) {
+          console.error('Error initializing contract:', error);
         }
+      } else {
+        console.log('No provider or account found in initContract');
       }
     };
 
     initContract();
   }, [provider, account]);
 
+  // Fetch the insurance pool balance from the contract
+  const fetchInsurancePoolBalance = async () => {
+    if (!contract) return;
+
+    try {
+      const balance = await contract.getInsurancePoolBalance();  // Reading data from the smart contract
+      setInsurancePoolBalance(ethers.formatEther(balance));  // Format balance in ether
+    } catch (error) {
+      console.error('Error fetching insurance pool balance:', error);
+    }
+  };
+
+  // Call fetchInsurancePoolBalance when the contract is initialized
+  useEffect(() => {
+    if (contract) {
+      fetchInsurancePoolBalance();
+    }
+  }, [contract]);
+
   // Register a new bank
   const registerBank = async () => {
     if (!newBankAddress) {
-      alert("Please enter a valid bank address.");
+      alert('Please enter a valid bank address.');
       return;
     }
 
@@ -78,17 +76,17 @@ const RegulatorPanel = () => {
       const tx = await contract.registerBank(newBankAddress);
       await tx.wait();
       alert(`Bank ${newBankAddress} registered successfully.`);
-      setNewBankAddress("");
+      setNewBankAddress('');  // Reset the input field
     } catch (error) {
-      console.error("Error registering bank:", error);
-      alert("Bank registration failed.");
+      console.error('Error registering bank:', error);
+      alert('Bank registration failed.');
     }
   };
 
   // Mark a bank as failed
   const failBank = async () => {
     if (!bankToFail) {
-      alert("Please enter a valid bank address.");
+      alert('Please enter a valid bank address.');
       return;
     }
 
@@ -96,88 +94,89 @@ const RegulatorPanel = () => {
       const tx = await contract.failBank(bankToFail);
       await tx.wait();
       alert(`Bank ${bankToFail} marked as failed.`);
-      setBankToFail("");
+      setBankToFail('');  // Reset the input field
     } catch (error) {
-      console.error("Error failing bank:", error);
-      alert("Failing bank failed.");
+      console.error('Error failing bank:', error);
+      alert('Failing bank failed.');
     }
   };
-
-  // Fetch the insurance pool balance
-  const fetchInsurancePoolBalance = async () => {
-    try {
-      const balance = await contract.getInsurancePoolBalance();
-      setInsurancePoolBalance(ethers.formatEther(balance));
-    } catch (error) {
-      console.error("Error fetching insurance pool balance:", error);
-    }
-  };
-
-  // Fetch the pool balance on load
-  useEffect(() => {
-    if (contract) {
-      fetchInsurancePoolBalance();
-    }
-  }, [contract]);
-
-  if (error) {
-    return <p className="error-message">{error}</p>;
-  }
 
   return (
-    <>
-      <Navbar creator={creator} />
-      <div className="regulator-panel">
-        <h2>Regulator Panel</h2>
+    <Box p={3}>
+      <Paper elevation={3} sx={{ padding: 3 }}>
+        <Typography variant="h4" gutterBottom>
+          Regulator Panel
+        </Typography>
 
-        <div className="wallet-info">
-          <p>Contract Creator (Regulator): {creator}</p>
-        </div>
+        <Typography variant="body1" gutterBottom>
+          Contract Creator (Regulator): {creator || 'Not available'}
+        </Typography>
 
-        {/* Insurance Pool Balance */}
-        <div className="pool-balance">
-          <h3>Insurance Pool Balance</h3>
-          <p>{insurancePoolBalance} ETH</p>
-        </div>
+        <Typography variant="body1" gutterBottom>
+          Insurance Pool Balance: {insurancePoolBalance} ETH
+        </Typography>
 
-        <div className="wallet-info">
-          <p>Contract Creator (Regulator): {creator}</p>
-        </div>
-        {/* Register Bank */}
-        <div
-          className={
-            isCorrectWallet ? "register-bank" : "register-bank disabled"
-          }
-        >
-          <h3>Register a Bank</h3>
-          <input
-            type="text"
-            placeholder="Enter Bank Address"
-            value={newBankAddress}
-            onChange={(e) => setNewBankAddress(e.target.value)}
-            disabled={!isCorrectWallet}
-          />
-          <button onClick={registerBank} disabled={!isCorrectWallet}>
-            Register Bank
-          </button>
-        </div>
+        {!isCorrectWallet && (
+          <Alert severity="error" sx={{ marginBottom: 3 }}>
+            You are not the regulator. Please switch to the correct wallet to perform actions.
+          </Alert>
+        )}
 
-        {/* Fail Bank */}
-        <div className={isCorrectWallet ? "fail-bank" : "fail-bank disabled"}>
-          <h3>Mark Bank as Failed</h3>
-          <input
-            type="text"
-            placeholder="Enter Bank Address"
-            value={bankToFail}
-            onChange={(e) => setBankToFail(e.target.value)}
-            disabled={!isCorrectWallet}
-          />
-          <button onClick={failBank} disabled={!isCorrectWallet}>
-            Fail Bank
-          </button>
-        </div>
-      </div>
-    </>
+        {/* Register Bank Section */}
+        <Grid2 container spacing={2} sx={{ marginBottom: 3 }}>
+          <Grid2 xs={12}>
+            <Typography variant="h5">Register a Bank</Typography>
+          </Grid2>
+          <Grid2 xs={12} md={8}>
+            <TextField
+              label="Enter Bank Address"
+              fullWidth
+              value={newBankAddress}
+              onChange={(e) => setNewBankAddress(e.target.value)}
+              disabled={!isCorrectWallet}
+            />
+          </Grid2>
+          <Grid2 xs={12} md={4}>
+            <Button
+              variant="contained"
+              color="primary"
+              onClick={registerBank}
+              disabled={!isCorrectWallet}
+              fullWidth
+            >
+              Register Bank
+            </Button>
+          </Grid2>
+        </Grid2>
+
+        {/* Fail Bank Section */}
+        <Grid2 container spacing={2}>
+          <Grid2 xs={12}>
+            <Typography variant="h5">Mark Bank as Failed</Typography>
+          </Grid2>
+          <Grid2 xs={12} md={8}>
+            <TextField
+              label="Enter Bank Address"
+              fullWidth
+              value={bankToFail}
+              onChange={(e) => setBankToFail(e.target.value)}
+              disabled={!isCorrectWallet}
+            />
+          </Grid2>
+          <Grid2 xs={12} md={4}>
+            <Button
+              variant="contained"
+              color="secondary"
+              onClick={failBank}
+              disabled={!isCorrectWallet}
+              fullWidth
+            >
+              Fail Bank
+            </Button>
+          </Grid2>
+        </Grid2>
+      </Paper>
+    </Box>
   );
 };
 
