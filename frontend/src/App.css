@@ -3,6 +3,9 @@
 /* Global box-sizing reset */
 *, *::before, *::after {
   box-sizing: border-box;
+  margin-top: 5px;
+  margin-left: 5px;
+  margin-right: 5px;
 }
 
 /* General Styles */
@@ -126,4 +129,14 @@ button:hover {
   padding: 10px;
   border: 1px solid red;
   border-radius: 5px;
+}
+
+.greyed-out {
+  opacity: 0.5;
+  pointer-events: none; /* Disable clicks and other interactions */
+}
+
+.warning {
+  color: red;
+  font-weight: bold;
 }

@@ -1,69 +1,110 @@
-import React, { useContext, useState, useEffect } from 'react';
+import React, { useContext, useState } from 'react';
 import { BlockchainContext } from './BlockchainProvider';
-import { chainConfig } from './chainConfig'; // Import the chainConfig
+import { chainConfig } from './chainConfig';
 import WalletInfo from './WalletInfo';
-import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faUserCircle } from '@fortawesome/free-solid-svg-icons';
-import './NavBar.css';
+import AppBar from '@mui/material/AppBar';
+import Toolbar from '@mui/material/Toolbar';
+import Typography from '@mui/material/Typography';
+import Menu from '@mui/material/Menu';
+import MenuItem from '@mui/material/MenuItem';
+import Button from '@mui/material/Button';
+import IconButton from '@mui/material/IconButton';
+import AccountCircle from '@mui/icons-material/AccountCircle';
+import { useTheme } from '@mui/material/styles';
 
 const NavBar = () => {
-  const { provider, loggedIn, login, logout, selectedChain, handleChainChange } = useContext(BlockchainContext);
-  const [isDropdownOpen, setIsDropdownOpen] = useState(false);
+  const defaultNetwork = "PolygonAmoy";
+  const { account, loggedIn, login, logout, selectedChain } = useContext(BlockchainContext);
+  const [anchorEl, setAnchorEl] = useState(null);
+  const [networkEl, setNetworkEl] = useState(null);
+  const [selectedValue, setSelectedChain] = useState(defaultNetwork);
 
-  const toggleDropdown = () => {
-    setIsDropdownOpen(!isDropdownOpen);
+  const theme = useTheme();
+
+  // Account menu handler
+  const handleAccountClick = (event) => setAnchorEl(event.currentTarget);
+  const handleMenuClose = () => setAnchorEl(null);
+
+  // Network dropdown handlers
+  const handleNetworkClick = (event) => setNetworkEl(event.currentTarget);
+  const handleNetworkClose = () => setNetworkEl(null);
+
+  const handleNetworkChange = (value) => {
+    setSelectedChain(value);
+    // handleChainChange({ target: { value } });
+    handleNetworkClose();
   };
 
-  const defaultNetwork = "PolygonAmoy";
-
-    // Dynamically create chainOptions from chainConfig
-    const chainOptions = Object.entries(chainConfig).map(([key, config]) => ({
-        value: key,
-        label: config.displayName,
-        disabled: key !== defaultNetwork, // Disable options that are not "Amoy"
-        }));
+  // Dynamically create chainOptions from chainConfig
+  const chainOptions = Object.entries(chainConfig).map(([key, config]) => ({
+    value: key,
+    label: config.displayName,
+    disabled: key !== defaultNetwork, // Disable options that are not "Amoy"
+  }));
 
   return (
-    <nav className="navbar">
-      <div className="navbar-logo">
-        <h2>On-Chain FDIC Insurance DApp</h2>
-      </div>
-        {/* Network Selector in Navbar */}
-        <div className="network-selector">
-          <label htmlFor="network-select" className="network-label">Network:</label>
-          <select
-            id="network-select"
-            value={selectedChain}
-            onChange={handleChainChange}
-            className="network-dropdown"
-          >
-            {chainOptions.map((chain) => (
-              <option key={chain.value} value={chain.value} disabled={chain.disabled}>
-                {chain.label}
-              </option>
-            ))}
-          </select>
-        </div>
+    <AppBar position="static" color="primary">
+      <Toolbar>
+        <Typography variant="h6" sx={{ flexGrow: 1 }}>
+          On-Chain FDIC Insurance DApp
+        </Typography>
 
-      <div className="navbar-links">
-        {loggedIn && provider ? (
-          <div className="navbar-wallet">
-            <div className="profile-container" onClick={toggleDropdown}>
-              <FontAwesomeIcon icon={faUserCircle} className="profile-icon" />
-              <span className="profile-text">Wallet</span>
-              <div className={`wallet-dropdown ${isDropdownOpen ? 'show' : ''}`}>
+        {/* Network Selector */}
+        <Button
+          aria-controls="network-menu"
+          aria-haspopup="true"
+          onClick={handleNetworkClick}
+          sx={{ color: 'white' }}
+        >
+          {selectedValue ? `Network: ${selectedValue}` : 'Select Network'}
+        </Button>
+        <Menu
+          id="network-menu"
+          anchorEl={networkEl}
+          open={Boolean(networkEl)}
+          onClose={handleNetworkClose}
+        >
+          {chainOptions.map((chain) => (
+            <MenuItem
+              key={chain.value}
+              disabled={chain.disabled}
+              onClick={() => handleNetworkChange(chain.value)}
+            >
+              {chain.label}
+            </MenuItem>
+          ))}
+        </Menu>
+
+        {/* Account & Wallet Info */}
+        <IconButton
+          edge="end"
+          aria-label="account"
+          aria-controls="account-menu"
+          aria-haspopup="true"
+          onClick={handleAccountClick}
+          color="inherit"
+        >
+          <AccountCircle />
+        </IconButton>
+        <Menu
+          id="account-menu"
+          anchorEl={anchorEl}
+          open={Boolean(anchorEl)}
+          onClose={handleMenuClose}
+        >
+          {loggedIn ? (
+            <div>
+              <MenuItem>
                 <WalletInfo />
-                <button className="logout-button" onClick={logout}>Logout</button>
-              </div>
+              </MenuItem>
+              <MenuItem onClick={logout}>Logout</MenuItem>
             </div>
-          </div>
-        ) : (
-          <button className="login-button" onClick={login}>
-            Login
-          </button>
-        )}
-      </div>
-    </nav>
+          ) : (
+            <MenuItem onClick={login}>Login</MenuItem>
+          )}
+        </Menu>
+      </Toolbar>
+    </AppBar>
   );
 };
 
