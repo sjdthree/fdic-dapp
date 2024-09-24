@@ -2,13 +2,20 @@ import React, { useContext, useState, useEffect } from 'react';
 import { BlockchainContext } from './BlockchainProvider';
 import { Box, Typography, Card, Button, IconButton, Tooltip } from '@mui/material';
 import ContentCopyIcon from '@mui/icons-material/ContentCopy';
+import ERC20FDIC from './abis/ERC20FDIC.json';
+import USDCERC20 from './abis/USDCERC20.json';
 
 import { ethers } from 'ethers';
 
+const fdicContractAddress = import.meta.env.VITE_FDIC_CONTRACT_ADDRESS;
+const regulatorWallet = import.meta.env.VITE_REGULATOR_WALLET;
+const defaultBankAddress = import.meta.env.VITE_DEFAULT_BANK_ADDRESS;
+const defaultTokenAddress = import.meta.env.VITE_DEFAULT_TOKEN_ADDRESS;
 
 const WalletInfo = () => {
   const { provider, account } = useContext(BlockchainContext);
   const [balance, setBalance] = useState('');
+  const [tokenBalance, setTokenBalance] = useState('');
   const [copySuccess, setCopySuccess] = useState(false);  // Track copy success
 
   useEffect(() => {
@@ -18,6 +25,17 @@ const WalletInfo = () => {
           const balanceInWei = await provider.getBalance(account);  // Fetch balance in wei
           const balanceInEther = ethers.formatEther(balanceInWei);  // Convert balance to ether
           setBalance(parseFloat(balanceInEther).toFixed(4));  // Display up to 4 decimal places
+
+          // Fetch ERC-20 token balance
+          const tokenContract = new ethers.Contract(defaultTokenAddress, USDCERC20.abi, provider);
+          const tokenBalanceRaw = await tokenContract.balanceOf(account);
+          
+          // Fetch token decimals to convert the token balance to a readable format
+          const decimals = await tokenContract.decimals();
+          const formattedTokenBalance = ethers.formatUnits(tokenBalanceRaw, decimals);
+
+          setTokenBalance(parseFloat(formattedTokenBalance).toFixed(4));  // Display up to 4 decimal places
+          
         } catch (error) {
           console.error('Error fetching wallet info:', error);
         }
@@ -25,7 +43,7 @@ const WalletInfo = () => {
     };
 
     fetchWalletInfo();
-  }, [provider, account]);  // Run effect when provider or account changes
+  }, [provider, account, defaultTokenAddress]);  // Run effect when provider or account changes
 
   const handleCopy = async () => {
     if (account) {
@@ -57,7 +75,10 @@ const WalletInfo = () => {
             </Tooltip>
           </Box>
           <Typography variant="body1" component="div" sx={{ marginTop: 1 }}>
-            <strong>Balance:</strong> {balance} ETH
+            <strong>Balance:</strong> {balance} POL
+          </Typography>
+          <Typography variant="body1" component="div" sx={{ marginTop: 1 }}>
+            <strong>Balance:</strong> {tokenBalance} USDC
           </Typography>
           <Button 
             variant="outlined" 
