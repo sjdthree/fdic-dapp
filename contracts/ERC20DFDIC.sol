@@ -105,9 +105,9 @@ contract ERC20FDIC {
     mapping(address => mapping(address => mapping(address => Depositor))) public deposits; // depositor => bank => Depositor
 
     event BankRegistered(address indexed bank);
-    event DepositMade(address indexed depositor, address indexed bank, uint256 amount);
+    event DepositMade(address indexed depositor, address indexed bank, address indexed token, uint256 amount);
     event BankFailed(address indexed bank);
-    event CompensationPaid(address indexed depositor, address indexed bank, uint256 amount);
+    event CompensationPaid(address indexed depositor, address indexed bank, address indexed token, uint256 amount);
     event RegulatorAdded(address indexed regulator);
     event RegulatorRemoved(address indexed regulator);
 
@@ -173,7 +173,7 @@ contract ERC20FDIC {
         deposits[msg.sender][_bank][_token].amount += _amount;
         banks[_bank].totalDeposits[_token] += _amount;
 
-        emit DepositMade(msg.sender, _bank, _amount);
+        emit DepositMade(msg.sender, _bank, _token, _amount);
     }
 
     // Regulator marks bank as failed
@@ -194,7 +194,7 @@ contract ERC20FDIC {
 
         // Pay compensation in ERC-20 tokens
         IERC20(_token).transfer( msg.sender, compensation);
-        emit CompensationPaid(msg.sender, _bank, compensation);
+        emit CompensationPaid(msg.sender, _bank, _token, compensation);
     }
 
     // Function to fund the insurance pool (could be from bank premiums)
