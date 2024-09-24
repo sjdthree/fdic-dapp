@@ -106,7 +106,7 @@ const ClaimInsurance = () => {
           type="text"
           value={tokenAddress}
           onChange={(e) => setTokenAddress(e.target.value)}
-          disabled
+          // disabled
           placeholder={defaultTokenAddress}
         />
         <p>

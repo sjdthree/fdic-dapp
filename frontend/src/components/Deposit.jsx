@@ -27,7 +27,10 @@ const Deposit = () => {
 
   const handleDeposit = async () => {
     setError(null); // Clear previous errors
-
+    if (!provider) {
+      setError('Provider is not initialized. Please try again.');
+      return;
+    }
     if (!bankAddress.trim()) {
       alert('Please enter the bank address.');
       return;
@@ -51,15 +54,22 @@ const Deposit = () => {
     }
     try {
       setIsLoading(true);
+      console.log('Deposit amount:', depositAmount);
+      console.log('Bank address:', bankAddress);
+      console.log('Token address:', tokenAddress);
+      console.log('FDIC Contract:', fdicContract);
+      console.log('Provider:', provider);
       const amountInWei = ethers.parseUnits(depositAmount, 18); // Assuming the token has 18 decimals
       // Approve FDIC contract to spend tokens
       const signer = await provider.getSigner();
       const tokenContract = new ethers.Contract(tokenAddress, USDCERC20.abi, signer);
       
-      const approvalTx = await tokenContract.approve(fdicContract.address, ethers.parseUnits(depositAmount, 18));
+      const approvalTx = await tokenContract.approve(fdicContract, ethers.parseUnits(depositAmount, 18));
       await approvalTx.wait();
+      console.log('Approval successful', approvalTx);
       const tx = await fdicContract.deposit(bankAddress, tokenAddress, amountInWei);
       await tx.wait();
+      console.log('Deposit successful', tx);
       alert(`Deposit successful: ${depositAmount} tokens to ${bankAddress}`);
       setIsLoading(false);
     } catch (error) {
