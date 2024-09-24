@@ -1,25 +1,28 @@
 // src/components/Deposit.js
-import React, { useState } from 'react';
+import React, { useState, useContext } from 'react';
 import './Deposit.css';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faMoneyCheckAlt } from '@fortawesome/free-solid-svg-icons';
 
 import { useFDICContract } from '../useFDICContract';
-import { parseEther, isAddress } from 'ethers';
+import { parseEther, isAddress, ethers } from 'ethers';
+import { BlockchainContext } from '../BlockchainProvider';
+import ERC20FDIC from '../abis/ERC20FDIC.json';
+
+const defaultBankAddress = import.meta.env.VITE_DEFAULT_BANK_ADDRESS;
+const defaultTokenAddress = import.meta.env.VITE_DEFAULT_TOKEN_ADDRESS;
 
 const Deposit = () => {
   const fdicContract = useFDICContract();
+  const { provider } = useContext(BlockchainContext);
   const [bankAddress, setBankAddress] = useState('');
   const [depositAmount, setDepositAmount] = useState('');
+  const [tokenAddress, setTokenAddress] = useState('');
   const [error, setError] = useState(null); // Error state
 
   const INSURANCE_LIMIT = 250000; // 250,000 ETH insurance limit
 
   const [isLoading, setIsLoading] = useState(false);
-
-  if (!fdicContract) {
-    return <div>Please log in to make a deposit.</div>;
-  }
 
   const handleDeposit = async () => {
     setError(null); // Clear previous errors
@@ -39,7 +42,7 @@ const Deposit = () => {
       return;
     }
     if (depositAmount > INSURANCE_LIMIT) {
-      setError(`Deposit exceeds the insurance limit of ${INSURANCE_LIMIT} ETH. Only ${INSURANCE_LIMIT} ETH will be insured.`);
+      setError(`Deposit exceeds the insurance limit of ${INSURANCE_LIMIT}. Only ${INSURANCE_LIMIT} will be insured.`);
     }
     if (!fdicContract) {
       setError('FDIC Contract is not initialized. Please try again.');
@@ -47,12 +50,17 @@ const Deposit = () => {
     }
     try {
       setIsLoading(true);
-      const tx = await fdicContract.deposit(bankAddress, {
-        value: parseEther(depositAmount),
-      });
+      const amountInWei = ethers.parseUnits(depositAmount, 18); // Assuming the token has 18 decimals
+      // Approve FDIC contract to spend tokens
+      const signer = provider.getSigner();
+      const tokenContract = new ethers.Contract(tokenAddress, ERC20FDIC.abi, signer);
+      
+      const approvalTx = await tokenContract.approve(fdicContract.address, ethers.parseUnits(depositAmount, 18));
+      await approvalTx.wait();
+      const tx = await fdicContract.deposit(bankAddress, tokenAddress, amountInWei);
       await tx.wait();
+      alert(`Deposit successful: ${depositAmount} tokens to ${bankAddress}`);
       setIsLoading(false);
-      alert('Deposit successful!');
     } catch (error) {
       setIsLoading(false);
       console.error(error);
@@ -93,15 +101,29 @@ const Deposit = () => {
           type="text"
           value={bankAddress}
           onChange={(e) => setBankAddress(e.target.value)}
-          placeholder="Enter the bank's blockchain address"
+          placeholder={defaultBankAddress}
         />
         <p>
           The blockchain address of the bank where you want to deposit your 
           funds. Think of this as the bank’s unique identifier on the blockchain.
         </p>
       </label>
+      <label>
+        <strong>Token Address:</strong>
+        <input
+          type="text"
+          value={tokenAddress}
+          disabled
+          onChange={(e) => setTokenAddress(e.target.value)}
+          placeholder={defaultTokenAddress}
+        />
+        <p>
+          The address of the token to deposit your 
+          funds. Think of this as the currency you want to deposit.
+        </p>
+      </label>
       <div className="form-group">
-        <label htmlFor="deposit-amount">Deposit Amount (ETH):</label>
+        <label htmlFor="deposit-amount">Deposit Amount:</label>
         <input
           type="number"
           id="deposit-amount"

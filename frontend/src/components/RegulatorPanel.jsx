@@ -1,24 +1,27 @@
 import React, { useState, useContext, useEffect } from 'react';
 import { BlockchainContext } from '../BlockchainProvider';
 import { ethers } from 'ethers';
-import OnChainFDIC from '../abis/OnChainFDIC.json';
+import ERC20FDIC from '../abis/ERC20FDIC.json';
 import { TextField, Button, Typography, Box, Grid2, Alert, Paper } from '@mui/material';
 
-const correctRegulatorWallet = '0x07a5d38f4041176d43c3875d8cd0c9f19b1dd072';
-const fdicContractAddress = '0xe97c2190996c7661657a07bD114844b36A9882c2';  // Hardcoded address
+const fdicContractAddress = import.meta.env.VITE_FDIC_CONTRACT_ADDRESS;
+const regulatorWallet = import.meta.env.VITE_REGULATOR_WALLET;
+const defaultBankAddress = import.meta.env.VITE_DEFAULT_BANK_ADDRESS;
+const defaultTokenAddress = import.meta.env.VITE_DEFAULT_TOKEN_ADDRESS;
 
 const RegulatorPanel = () => {
   const { provider, account } = useContext(BlockchainContext);
   const [contract, setContract] = useState(null);
-  const [creator, setCreator] = useState(correctRegulatorWallet);
-  const [newBankAddress, setNewBankAddress] = useState('');
+  const [creator, setCreator] = useState(regulatorWallet);
+  const [newBankAddress, setNewBankAddress] = useState(defaultBankAddress);
   const [bankToFail, setBankToFail] = useState('');
   const [insurancePoolBalance, setInsurancePoolBalance] = useState('0');
+  const [newRegulatorAddress, setNewRegulatorAddress] = useState('');
   const [isCorrectWallet, setIsCorrectWallet] = useState(false);
 
   // Check if the connected account is the correct regulator wallet
   useEffect(() => {
-    if (account && account.toLowerCase() === correctRegulatorWallet.toLowerCase()) {
+    if (account && account.toLowerCase() === regulatorWallet.toLowerCase()) {
       setIsCorrectWallet(true);
     } else {
       setIsCorrectWallet(false);
@@ -31,8 +34,9 @@ const RegulatorPanel = () => {
       if (provider && account) {
         try {
           console.log('Initializing contract...');
-          const signer = provider.getSigner();  // Use a signer for writing transactions
-          const fdicContract = new ethers.Contract(fdicContractAddress, OnChainFDIC.abi, signer);
+          const signer = await provider.getSigner();  // Use a signer for writing transactions
+
+          const fdicContract = new ethers.Contract(fdicContractAddress, ERC20FDIC.abi, signer);
           setContract(fdicContract);
           console.log('Contract initialized:', fdicContract);
         } catch (error) {
@@ -82,7 +86,17 @@ const RegulatorPanel = () => {
       alert('Bank registration failed.');
     }
   };
-
+  // Add a new regulator
+  const handleAddRegulator = async () => {
+    try {
+      const tx = await contract.addRegulator(newRegulatorAddress);
+      await tx.wait();
+      alert(`Regulator ${newRegulatorAddress} added successfully.`);
+    } catch (error) {
+      console.error('Error adding regulator:', error);
+      alert('Adding regulator failed.');
+    }
+  };
   // Mark a bank as failed
   const failBank = async () => {
     if (!bankToFail) {
@@ -174,6 +188,19 @@ const RegulatorPanel = () => {
               Fail Bank
             </Button>
           </Grid2>
+        </Grid2>
+        <Grid2 xs={12} md={6}>
+          <TextField
+            label="New Regulator Address"
+            value={newRegulatorAddress}
+            onChange={(e) => setNewRegulatorAddress(e.target.value)}
+            disabled={!isCorrectWallet}
+          />
+        </Grid2>
+        <Grid2 xs={12} md={6}>
+          <Button variant="contained" onClick={handleAddRegulator} disabled={!isCorrectWallet}>
+            Add Regulator
+          </Button>
         </Grid2>
       </Paper>
     </Box>
