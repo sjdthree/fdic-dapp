@@ -40,7 +40,7 @@ const RegulatorPanel = () => {
         setIsCorrectWallet(false);
       }
     }
-  }, [account]);
+  }, [contract, account]);
 
   // Initialize contract
   useEffect(() => {
