@@ -1,8 +1,16 @@
-import React, { useState, useContext, useEffect } from 'react';
-import { BlockchainContext } from '../BlockchainProvider';
-import { ethers } from 'ethers';
-import ERC20FDIC from '../abis/ERC20FDIC.json';
-import { TextField, Button, Typography, Box, Grid2, Alert, Paper } from '@mui/material';
+import React, { useState, useContext, useEffect } from "react";
+import { BlockchainContext } from "../BlockchainProvider";
+import { ethers } from "ethers";
+import ERC20FDIC from "../abis/ERC20FDIC.json";
+import {
+  TextField,
+  Button,
+  Typography,
+  Box,
+  Grid2,
+  Alert,
+  Paper,
+} from "@mui/material";
 
 const fdicContractAddress = import.meta.env.VITE_FDIC_CONTRACT_ADDRESS;
 const regulatorWallet = import.meta.env.VITE_REGULATOR_WALLET;
@@ -14,17 +22,23 @@ const RegulatorPanel = () => {
   const [contract, setContract] = useState(null);
   const [creator, setCreator] = useState(regulatorWallet);
   const [newBankAddress, setNewBankAddress] = useState(defaultBankAddress);
-  const [bankToFail, setBankToFail] = useState('');
-  const [insurancePoolBalance, setInsurancePoolBalance] = useState('0');
-  const [newRegulatorAddress, setNewRegulatorAddress] = useState('');
+  const [bankToFail, setBankToFail] = useState("");
+  const [insurancePoolBalance, setInsurancePoolBalance] = useState("0");
+  const [newRegulatorAddress, setNewRegulatorAddress] = useState("");
   const [isCorrectWallet, setIsCorrectWallet] = useState(false);
 
   // Check if the connected account is the correct regulator wallet
   useEffect(() => {
-    if (account && account.toLowerCase() === regulatorWallet.toLowerCase()) {
-      setIsCorrectWallet(true);
-    } else {
-      setIsCorrectWallet(false);
+    if (contract) {
+      const regCheck = async () => {
+        await contract.isRegulator(account);
+      };
+      console.log(regCheck);
+      if (regCheck) {
+        setIsCorrectWallet(true);
+      } else {
+        setIsCorrectWallet(false);
+      }
     }
   }, [account]);
 
@@ -33,17 +47,21 @@ const RegulatorPanel = () => {
     const initContract = async () => {
       if (provider && account) {
         try {
-          console.log('Initializing contract...');
-          const signer = await provider.getSigner();  // Use a signer for writing transactions
+          console.log("Initializing contract...");
+          const signer = await provider.getSigner(); // Use a signer for writing transactions
 
-          const fdicContract = new ethers.Contract(fdicContractAddress, ERC20FDIC.abi, signer);
+          const fdicContract = new ethers.Contract(
+            fdicContractAddress,
+            ERC20FDIC.abi,
+            signer
+          );
           setContract(fdicContract);
-          console.log('Contract initialized:', fdicContract);
+          console.log("Contract initialized:", fdicContract);
         } catch (error) {
-          console.error('Error initializing contract:', error);
+          console.error("Error initializing contract:", error);
         }
       } else {
-        console.log('No provider or account found in initContract');
+        console.log("No provider or account found in initContract");
       }
     };
 
@@ -55,10 +73,10 @@ const RegulatorPanel = () => {
     if (!contract) return;
 
     try {
-      const balance = await contract.getInsurancePoolBalance();  // Reading data from the smart contract
-      setInsurancePoolBalance(ethers.formatEther(balance));  // Format balance in ether
+      const balance = await contract.getInsurancePoolBalance(); // Reading data from the smart contract
+      setInsurancePoolBalance(ethers.formatEther(balance)); // Format balance in ether
     } catch (error) {
-      console.error('Error fetching insurance pool balance:', error);
+      console.error("Error fetching insurance pool balance:", error);
     }
   };
 
@@ -72,7 +90,7 @@ const RegulatorPanel = () => {
   // Register a new bank
   const registerBank = async () => {
     if (!newBankAddress) {
-      alert('Please enter a valid bank address.');
+      alert("Please enter a valid bank address.");
       return;
     }
 
@@ -80,10 +98,10 @@ const RegulatorPanel = () => {
       const tx = await contract.registerBank(newBankAddress);
       await tx.wait();
       alert(`Bank ${newBankAddress} registered successfully.`);
-      setNewBankAddress('');  // Reset the input field
+      setNewBankAddress(""); // Reset the input field
     } catch (error) {
-      console.error('Error registering bank:', error);
-      alert('Bank registration failed.');
+      console.error("Error registering bank:", error);
+      alert("Bank registration failed.");
     }
   };
   // Add a new regulator
@@ -93,14 +111,14 @@ const RegulatorPanel = () => {
       await tx.wait();
       alert(`Regulator ${newRegulatorAddress} added successfully.`);
     } catch (error) {
-      console.error('Error adding regulator:', error);
-      alert('Adding regulator failed.');
+      console.error("Error adding regulator:", error);
+      alert("Adding regulator failed.");
     }
   };
   // Mark a bank as failed
   const failBank = async () => {
     if (!bankToFail) {
-      alert('Please enter a valid bank address.');
+      alert("Please enter a valid bank address.");
       return;
     }
 
@@ -108,10 +126,10 @@ const RegulatorPanel = () => {
       const tx = await contract.failBank(bankToFail);
       await tx.wait();
       alert(`Bank ${bankToFail} marked as failed.`);
-      setBankToFail('');  // Reset the input field
+      setBankToFail(""); // Reset the input field
     } catch (error) {
-      console.error('Error failing bank:', error);
-      alert('Failing bank failed.');
+      console.error("Error failing bank:", error);
+      alert("Failing bank failed.");
     }
   };
 
@@ -123,7 +141,7 @@ const RegulatorPanel = () => {
         </Typography>
 
         <Typography variant="body1" gutterBottom>
-          Contract Creator (Regulator): {creator || 'Not available'}
+          Contract Creator (Regulator): {creator || "Not available"}
         </Typography>
 
         <Typography variant="body1" gutterBottom>
@@ -132,7 +150,8 @@ const RegulatorPanel = () => {
 
         {!isCorrectWallet && (
           <Alert severity="error" sx={{ marginBottom: 3 }}>
-            You are not the regulator. Please switch to the correct wallet to perform actions.
+            You are not the regulator. Please switch to the correct wallet to
+            perform actions.
           </Alert>
         )}
 
@@ -198,7 +217,11 @@ const RegulatorPanel = () => {
           />
         </Grid2>
         <Grid2 xs={12} md={6}>
-          <Button variant="contained" onClick={handleAddRegulator} disabled={!isCorrectWallet}>
+          <Button
+            variant="contained"
+            onClick={handleAddRegulator}
+            disabled={!isCorrectWallet}
+          >
             Add Regulator
           </Button>
         </Grid2>
