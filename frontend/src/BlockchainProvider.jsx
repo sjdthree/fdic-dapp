@@ -9,11 +9,12 @@ import { ethers } from "ethers";
 export const BlockchainContext = createContext();
 
 const clientId = import.meta.env.VITE_WEB3AUTH_CLIENT_ID; // Your Web3Auth Client ID from the dashboard
+const infuraID = import.meta.env.VITE_INFURA_PROJECT_ID;
 
 const chainConfig = {
   chainNamespace: CHAIN_NAMESPACES.EIP155,
   chainId: "0x13882", // hex of 80002, polygon testnet
-  rpcTarget: "https://rpc.ankr.com/polygon_amoy",
+  rpcTarget: `https://polygon-amoy.infura.io/v3/${infuraID}`,
   displayName: "Polygon Amoy Testnet",
   blockExplorerUrl: "https://amoy.polygonscan.com/",
   ticker: "MATIC",

@@ -6,6 +6,8 @@ import './ClaimInsurance.css';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faShieldAlt } from '@fortawesome/free-solid-svg-icons';
 
+const defaultBankAddress = import.meta.env.VITE_DEFAULT_BANK_ADDRESS;
+const defaultTokenAddress = import.meta.env.VITE_DEFAULT_TOKEN_ADDRESS;
 
 const ClaimInsurance = () => {
   const fdicContract = useFDICContract();
@@ -13,6 +15,7 @@ const ClaimInsurance = () => {
   const [isLoading, setIsLoading] = useState(false);
   const [claimAmount, setClaimAmount] = useState('');
   const [error, setError] = useState(null); // Error state
+  const [tokenAddress, setTokenAddress] = useState('');
 
   if (!fdicContract) {
     return <div>Please log in to claim insurance.</div>;
@@ -35,7 +38,7 @@ const ClaimInsurance = () => {
     }
     try {
       setIsLoading(true);
-      const tx = await fdicContract.claimInsurance(bankAddress);
+      const tx = await fdicContract.claimInsurance(bankAddress, tokenAddress);
       await tx.wait();
       setIsLoading(false);
       alert('Insurance claimed!');
@@ -92,13 +95,24 @@ const ClaimInsurance = () => {
           type="text"
           value={bankAddress}
           onChange={(e) => setBankAddress(e.target.value)}
-          placeholder="Enter the bank's blockchain address"
+          placeholder={defaultBankAddress}
         />
         <p>
           This is the blockchain address of the failed bank. If the bank has 
           failed, you will be able to claim the insurance amount.
         </p>
-  
+        <strong>Token Address:</strong>
+        <input
+          type="text"
+          value={tokenAddress}
+          onChange={(e) => setTokenAddress(e.target.value)}
+          // disabled
+          placeholder={defaultTokenAddress}
+        />
+        <p>
+          This is the blockchain address of the failed bank. If the bank has 
+          failed, you will be able to claim the insurance amount.
+        </p>
       <button className="claim-button" onClick={handleClaim}>
       Claim Insurance
       </button>

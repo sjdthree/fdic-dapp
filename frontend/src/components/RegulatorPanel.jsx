@@ -1,27 +1,44 @@
-import React, { useState, useContext, useEffect } from 'react';
-import { BlockchainContext } from '../BlockchainProvider';
-import { ethers } from 'ethers';
-import OnChainFDIC from '../abis/OnChainFDIC.json';
-import { TextField, Button, Typography, Box, Grid2, Alert, Paper } from '@mui/material';
+import React, { useState, useContext, useEffect } from "react";
+import { BlockchainContext } from "../BlockchainProvider";
+import { ethers } from "ethers";
+import ERC20FDIC from "../abis/ERC20FDIC.json";
+import {
+  TextField,
+  Button,
+  Typography,
+  Box,
+  Grid2,
+  Alert,
+  Paper,
+} from "@mui/material";
 
-const correctRegulatorWallet = '0x07a5d38f4041176d43c3875d8cd0c9f19b1dd072';
-const fdicContractAddress = '0xe97c2190996c7661657a07bD114844b36A9882c2';  // Hardcoded address
+const fdicContractAddress = import.meta.env.VITE_FDIC_CONTRACT_ADDRESS;
+const regulatorWallet = import.meta.env.VITE_REGULATOR_WALLET;
+const defaultBankAddress = import.meta.env.VITE_DEFAULT_BANK_ADDRESS;
+const defaultTokenAddress = import.meta.env.VITE_DEFAULT_TOKEN_ADDRESS;
 
 const RegulatorPanel = () => {
   const { provider, account } = useContext(BlockchainContext);
   const [contract, setContract] = useState(null);
-  const [creator, setCreator] = useState(correctRegulatorWallet);
-  const [newBankAddress, setNewBankAddress] = useState('');
-  const [bankToFail, setBankToFail] = useState('');
-  const [insurancePoolBalance, setInsurancePoolBalance] = useState('0');
+  const [creator, setCreator] = useState(regulatorWallet);
+  const [newBankAddress, setNewBankAddress] = useState(defaultBankAddress);
+  const [bankToFail, setBankToFail] = useState("");
+  const [insurancePoolBalance, setInsurancePoolBalance] = useState("0");
+  const [newRegulatorAddress, setNewRegulatorAddress] = useState("");
   const [isCorrectWallet, setIsCorrectWallet] = useState(false);
 
   // Check if the connected account is the correct regulator wallet
   useEffect(() => {
-    if (account && account.toLowerCase() === correctRegulatorWallet.toLowerCase()) {
-      setIsCorrectWallet(true);
-    } else {
-      setIsCorrectWallet(false);
+    if (contract) {
+      const regCheck = async () => {
+        await contract.isRegulator(account);
+      };
+      console.log(regCheck);
+      if (regCheck) {
+        setIsCorrectWallet(true);
+      } else {
+        setIsCorrectWallet(false);
+      }
     }
   }, [account]);
 
@@ -30,16 +47,21 @@ const RegulatorPanel = () => {
     const initContract = async () => {
       if (provider && account) {
         try {
-          console.log('Initializing contract...');
-          const signer = provider.getSigner();  // Use a signer for writing transactions
-          const fdicContract = new ethers.Contract(fdicContractAddress, OnChainFDIC.abi, signer);
+          console.log("Initializing contract...");
+          const signer = await provider.getSigner(); // Use a signer for writing transactions
+
+          const fdicContract = new ethers.Contract(
+            fdicContractAddress,
+            ERC20FDIC.abi,
+            signer
+          );
           setContract(fdicContract);
-          console.log('Contract initialized:', fdicContract);
+          console.log("Contract initialized:", fdicContract);
         } catch (error) {
-          console.error('Error initializing contract:', error);
+          console.error("Error initializing contract:", error);
         }
       } else {
-        console.log('No provider or account found in initContract');
+        console.log("No provider or account found in initContract");
       }
     };
 
@@ -51,10 +73,10 @@ const RegulatorPanel = () => {
     if (!contract) return;
 
     try {
-      const balance = await contract.getInsurancePoolBalance();  // Reading data from the smart contract
-      setInsurancePoolBalance(ethers.formatEther(balance));  // Format balance in ether
+      const balance = await contract.getInsurancePoolBalance(); // Reading data from the smart contract
+      setInsurancePoolBalance(ethers.formatEther(balance)); // Format balance in ether
     } catch (error) {
-      console.error('Error fetching insurance pool balance:', error);
+      console.error("Error fetching insurance pool balance:", error);
     }
   };
 
@@ -68,7 +90,7 @@ const RegulatorPanel = () => {
   // Register a new bank
   const registerBank = async () => {
     if (!newBankAddress) {
-      alert('Please enter a valid bank address.');
+      alert("Please enter a valid bank address.");
       return;
     }
 
@@ -76,17 +98,27 @@ const RegulatorPanel = () => {
       const tx = await contract.registerBank(newBankAddress);
       await tx.wait();
       alert(`Bank ${newBankAddress} registered successfully.`);
-      setNewBankAddress('');  // Reset the input field
+      setNewBankAddress(""); // Reset the input field
     } catch (error) {
-      console.error('Error registering bank:', error);
-      alert('Bank registration failed.');
+      console.error("Error registering bank:", error);
+      alert("Bank registration failed.");
     }
   };
-
+  // Add a new regulator
+  const handleAddRegulator = async () => {
+    try {
+      const tx = await contract.addRegulator(newRegulatorAddress);
+      await tx.wait();
+      alert(`Regulator ${newRegulatorAddress} added successfully.`);
+    } catch (error) {
+      console.error("Error adding regulator:", error);
+      alert("Adding regulator failed.");
+    }
+  };
   // Mark a bank as failed
   const failBank = async () => {
     if (!bankToFail) {
-      alert('Please enter a valid bank address.');
+      alert("Please enter a valid bank address.");
       return;
     }
 
@@ -94,10 +126,10 @@ const RegulatorPanel = () => {
       const tx = await contract.failBank(bankToFail);
       await tx.wait();
       alert(`Bank ${bankToFail} marked as failed.`);
-      setBankToFail('');  // Reset the input field
+      setBankToFail(""); // Reset the input field
     } catch (error) {
-      console.error('Error failing bank:', error);
-      alert('Failing bank failed.');
+      console.error("Error failing bank:", error);
+      alert("Failing bank failed.");
     }
   };
 
@@ -109,7 +141,7 @@ const RegulatorPanel = () => {
         </Typography>
 
         <Typography variant="body1" gutterBottom>
-          Contract Creator (Regulator): {creator || 'Not available'}
+          Contract Creator (Regulator): {creator || "Not available"}
         </Typography>
 
         <Typography variant="body1" gutterBottom>
@@ -118,7 +150,8 @@ const RegulatorPanel = () => {
 
         {!isCorrectWallet && (
           <Alert severity="error" sx={{ marginBottom: 3 }}>
-            You are not the regulator. Please switch to the correct wallet to perform actions.
+            You are not the regulator. Please switch to the correct wallet to
+            perform actions.
           </Alert>
         )}
 
@@ -174,6 +207,23 @@ const RegulatorPanel = () => {
               Fail Bank
             </Button>
           </Grid2>
+        </Grid2>
+        <Grid2 xs={12} md={6}>
+          <TextField
+            label="New Regulator Address"
+            value={newRegulatorAddress}
+            onChange={(e) => setNewRegulatorAddress(e.target.value)}
+            disabled={!isCorrectWallet}
+          />
+        </Grid2>
+        <Grid2 xs={12} md={6}>
+          <Button
+            variant="contained"
+            onClick={handleAddRegulator}
+            disabled={!isCorrectWallet}
+          >
+            Add Regulator
+          </Button>
         </Grid2>
       </Paper>
     </Box>
