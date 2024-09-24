@@ -641,6 +641,6 @@ contract USDCERC20 is Context, ERC20 {
      * @dev Constructor that gives _msgSender() all of existing tokens.
      */
     constructor () public ERC20("USDC", "USDC") {
-        _mint(_msgSender(), 10000 * (10 ** uint256(decimals())));
+        _mint(_msgSender(), 10000000 * (10 ** uint256(decimals())));
     }
 }
