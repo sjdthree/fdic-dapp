@@ -6,6 +6,8 @@ import './ClaimInsurance.css';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faShieldAlt } from '@fortawesome/free-solid-svg-icons';
 
+const defaultBankAddress = import.meta.env.VITE_DEFAULT_BANK_ADDRESS;
+const defaultTokenAddress = import.meta.env.VITE_DEFAULT_TOKEN_ADDRESS;
 
 const ClaimInsurance = () => {
   const fdicContract = useFDICContract();
@@ -93,7 +95,7 @@ const ClaimInsurance = () => {
           type="text"
           value={bankAddress}
           onChange={(e) => setBankAddress(e.target.value)}
-          placeholder="Enter the bank's blockchain address"
+          placeholder={defaultBankAddress}
         />
         <p>
           This is the blockchain address of the failed bank. If the bank has 
@@ -104,7 +106,8 @@ const ClaimInsurance = () => {
           type="text"
           value={tokenAddress}
           onChange={(e) => setTokenAddress(e.target.value)}
-          placeholder="Enter the bank's blockchain address"
+          disabled
+          placeholder={defaultTokenAddress}
         />
         <p>
           This is the blockchain address of the failed bank. If the bank has 

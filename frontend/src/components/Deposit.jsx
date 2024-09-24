@@ -9,6 +9,9 @@ import { parseEther, isAddress, ethers } from 'ethers';
 import { BlockchainContext } from '../BlockchainProvider';
 import ERC20FDIC from '../abis/ERC20FDIC.json';
 
+const defaultBankAddress = import.meta.env.VITE_DEFAULT_BANK_ADDRESS;
+const defaultTokenAddress = import.meta.env.VITE_DEFAULT_TOKEN_ADDRESS;
+
 const Deposit = () => {
   const fdicContract = useFDICContract();
   const { provider } = useContext(BlockchainContext);
@@ -98,7 +101,7 @@ const Deposit = () => {
           type="text"
           value={bankAddress}
           onChange={(e) => setBankAddress(e.target.value)}
-          placeholder="Enter the bank's blockchain address"
+          placeholder={defaultBankAddress}
         />
         <p>
           The blockchain address of the bank where you want to deposit your 
@@ -110,8 +113,9 @@ const Deposit = () => {
         <input
           type="text"
           value={tokenAddress}
+          disabled
           onChange={(e) => setTokenAddress(e.target.value)}
-          placeholder="Enter the ERC20 Token's blockchain address"
+          placeholder={defaultTokenAddress}
         />
         <p>
           The address of the token to deposit your 

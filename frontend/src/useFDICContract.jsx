@@ -4,6 +4,9 @@ import { BlockchainContext } from './BlockchainProvider';
 import ERC20FDIC from './abis/ERC20FDIC.json';
 import { Contract } from 'ethers';
 
+const fdicContractAddress = import.meta.env.VITE_FDIC_CONTRACT_ADDRESS;
+
+
 export const useFDICContract = () => {
   const { provider, selectedChain } = useContext(BlockchainContext);
   const [fdicContract, setFdicContract] = useState(null);
@@ -12,7 +15,7 @@ export const useFDICContract = () => {
     () => ({
     Ethereum: '0xYourEthereumContractAddress', // Replace with your contract address on Ethereum
     Polygon: '0xYourPolygonContractAddress',   // Replace with your contract address on Polygon
-    PolygonAmoy: '0x4B1EAA82eA1945E72C14D0ea6F439432BB65894b',
+    PolygonAmoy: fdicContractAddress,
     Ganache: '0x596a58959872f44d4ad96CAa9443BB7217ba73A1',   // Replace with your Ganache contract address
     // Add more as needed
     }),

@@ -4,14 +4,16 @@ import { ethers } from 'ethers';
 import ERC20FDIC from '../abis/ERC20FDIC.json';
 import { TextField, Button, Typography, Box, Grid2, Alert, Paper } from '@mui/material';
 
-const correctRegulatorWallet = '0xEF097AC34D0e8bB5dc419cc1BcefF0E52dAcd8f9';
-const fdicContractAddress = '0x4B1EAA82eA1945E72C14D0ea6F439432BB65894b';  // Hardcoded address
+const fdicContractAddress = import.meta.env.VITE_FDIC_CONTRACT_ADDRESS;
+const regulatorWallet = import.meta.env.VITE_REGULATOR_WALLET;
+const defaultBankAddress = import.meta.env.VITE_DEFAULT_BANK_ADDRESS;
+const defaultTokenAddress = import.meta.env.VITE_DEFAULT_TOKEN_ADDRESS;
 
 const RegulatorPanel = () => {
   const { provider, account } = useContext(BlockchainContext);
   const [contract, setContract] = useState(null);
-  const [creator, setCreator] = useState(correctRegulatorWallet);
-  const [newBankAddress, setNewBankAddress] = useState('');
+  const [creator, setCreator] = useState(regulatorWallet);
+  const [newBankAddress, setNewBankAddress] = useState(defaultBankAddress);
   const [bankToFail, setBankToFail] = useState('');
   const [insurancePoolBalance, setInsurancePoolBalance] = useState('0');
   const [newRegulatorAddress, setNewRegulatorAddress] = useState('');
@@ -19,7 +21,7 @@ const RegulatorPanel = () => {
 
   // Check if the connected account is the correct regulator wallet
   useEffect(() => {
-    if (account && account.toLowerCase() === correctRegulatorWallet.toLowerCase()) {
+    if (account && account.toLowerCase() === regulatorWallet.toLowerCase()) {
       setIsCorrectWallet(true);
     } else {
       setIsCorrectWallet(false);
@@ -32,7 +34,8 @@ const RegulatorPanel = () => {
       if (provider && account) {
         try {
           console.log('Initializing contract...');
-          const signer = provider.getSigner();  // Use a signer for writing transactions
+          const signer = await provider.getSigner();  // Use a signer for writing transactions
+
           const fdicContract = new ethers.Contract(fdicContractAddress, ERC20FDIC.abi, signer);
           setContract(fdicContract);
           console.log('Contract initialized:', fdicContract);
