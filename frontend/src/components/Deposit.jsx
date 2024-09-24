@@ -1,14 +1,17 @@
 // src/components/Deposit.js
-import React, { useState } from 'react';
+import React, { useState, useContext } from 'react';
 import './Deposit.css';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faMoneyCheckAlt } from '@fortawesome/free-solid-svg-icons';
 
 import { useFDICContract } from '../useFDICContract';
 import { parseEther, isAddress, ethers } from 'ethers';
+import { BlockchainContext } from '../BlockchainProvider';
+import ERC20FDIC from '../abis/ERC20FDIC.json';
 
 const Deposit = () => {
   const fdicContract = useFDICContract();
+  const { provider } = useContext(BlockchainContext);
   const [bankAddress, setBankAddress] = useState('');
   const [depositAmount, setDepositAmount] = useState('');
   const [tokenAddress, setTokenAddress] = useState('');
@@ -17,7 +20,6 @@ const Deposit = () => {
   const INSURANCE_LIMIT = 250000; // 250,000 ETH insurance limit
 
   const [isLoading, setIsLoading] = useState(false);
-
 
   const handleDeposit = async () => {
     setError(null); // Clear previous errors
@@ -37,7 +39,7 @@ const Deposit = () => {
       return;
     }
     if (depositAmount > INSURANCE_LIMIT) {
-      setError(`Deposit exceeds the insurance limit of ${INSURANCE_LIMIT} ETH. Only ${INSURANCE_LIMIT} ETH will be insured.`);
+      setError(`Deposit exceeds the insurance limit of ${INSURANCE_LIMIT}. Only ${INSURANCE_LIMIT} will be insured.`);
     }
     if (!fdicContract) {
       setError('FDIC Contract is not initialized. Please try again.');
@@ -46,6 +48,12 @@ const Deposit = () => {
     try {
       setIsLoading(true);
       const amountInWei = ethers.parseUnits(depositAmount, 18); // Assuming the token has 18 decimals
+      // Approve FDIC contract to spend tokens
+      const signer = provider.getSigner();
+      const tokenContract = new ethers.Contract(tokenAddress, ERC20FDIC.abi, signer);
+      
+      const approvalTx = await tokenContract.approve(fdicContract.address, ethers.parseUnits(depositAmount, 18));
+      await approvalTx.wait();
       const tx = await fdicContract.deposit(bankAddress, tokenAddress, amountInWei);
       await tx.wait();
       alert(`Deposit successful: ${depositAmount} tokens to ${bankAddress}`);
@@ -111,7 +119,7 @@ const Deposit = () => {
         </p>
       </label>
       <div className="form-group">
-        <label htmlFor="deposit-amount">Deposit Amount (ETH):</label>
+        <label htmlFor="deposit-amount">Deposit Amount:</label>
         <input
           type="number"
           id="deposit-amount"
