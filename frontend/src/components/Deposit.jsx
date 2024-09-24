@@ -8,6 +8,7 @@ import { useFDICContract } from '../useFDICContract';
 import { parseEther, isAddress, ethers } from 'ethers';
 import { BlockchainContext } from '../BlockchainProvider';
 import ERC20FDIC from '../abis/ERC20FDIC.json';
+import USDCERC20 from '../abis/USDCERC20.json';
 
 const defaultBankAddress = import.meta.env.VITE_DEFAULT_BANK_ADDRESS;
 const defaultTokenAddress = import.meta.env.VITE_DEFAULT_TOKEN_ADDRESS;
@@ -53,7 +54,7 @@ const Deposit = () => {
       const amountInWei = ethers.parseUnits(depositAmount, 18); // Assuming the token has 18 decimals
       // Approve FDIC contract to spend tokens
       const signer = await provider.getSigner();
-      const tokenContract = new ethers.Contract(tokenAddress, ERC20FDIC.abi, signer);
+      const tokenContract = new ethers.Contract(tokenAddress, USDCERC20.abi, signer);
       
       const approvalTx = await tokenContract.approve(fdicContract.address, ethers.parseUnits(depositAmount, 18));
       await approvalTx.wait();
@@ -113,7 +114,7 @@ const Deposit = () => {
         <input
           type="text"
           value={tokenAddress}
-          disabled
+          // disabled
           onChange={(e) => setTokenAddress(e.target.value)}
           placeholder={defaultTokenAddress}
         />
