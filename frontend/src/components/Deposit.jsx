@@ -52,7 +52,7 @@ const Deposit = () => {
       setIsLoading(true);
       const amountInWei = ethers.parseUnits(depositAmount, 18); // Assuming the token has 18 decimals
       // Approve FDIC contract to spend tokens
-      const signer = provider.getSigner();
+      const signer = await provider.getSigner();
       const tokenContract = new ethers.Contract(tokenAddress, ERC20FDIC.abi, signer);
       
       const approvalTx = await tokenContract.approve(fdicContract.address, ethers.parseUnits(depositAmount, 18));
