@@ -99,7 +99,12 @@ contract ERC20FDIC {
         address token;
     }
 
+    uint256 public insurancePoolBalance;
+
     address[] public regulators; // an array to store multiple regulators
+    address[] public bankArray;
+    Depositor[] public depositArray;
+
     mapping(address => bool) public isRegulator; // mapping to check if an address is a regulator
     mapping(address => Bank) public banks;
     mapping(address => mapping(address => mapping(address => Depositor))) public deposits; // depositor => bank => Depositor
@@ -112,6 +117,7 @@ contract ERC20FDIC {
     event RegulatorAdded(address indexed regulator);
     event RegulatorRemoved(address indexed regulator);
 
+
     modifier onlyRegulator() {
         require(isRegulator[msg.sender], "Only regulator can perform this action");
         _;
@@ -120,6 +126,7 @@ contract ERC20FDIC {
     constructor() {
         isRegulator[msg.sender] = true;
         regulators.push(msg.sender);
+        insurancePoolBalance = 0;
     }
 
     // Function to add a new regulator
@@ -151,13 +158,47 @@ contract ERC20FDIC {
         emit RegulatorRemoved(_regulator);
     }
 
-
+    // Function to get all regulators
+    function getRegulators() public view returns (address[] memory) {
+        return regulators;
+    }
 
     // Function for regulator to register banks
     function registerBank(address _bank) external onlyRegulator {
         banks[_bank].isRegistered = true;
+        bankArray.push(_bank);
         emit BankRegistered(_bank);
     }
+
+    // Function for regulator to get all banks
+    function getBanks() public view returns (address[] memory) {
+        return bankArray;
+    }
+    
+
+    // Function for regulator to get all banks
+    function getFailedBanks() public view returns (address[] memory) {
+        // Create a temporary array to hold the addresses of failed banks
+        address[] memory failedBanksTemp = new address[](bankArray.length);
+        uint256 count = 0;
+
+        // Iterate over all bank addresses and collect failed ones
+        for (uint256 i = 0; i < bankArray.length; i++) {
+            if (banks[bankArray[i]].isFailed) {
+                failedBanksTemp[count] = bankArray[i];
+                count++;
+            }
+        }
+
+        // Create a fixed-size array to return with only the failed banks
+        address[] memory failedBanks = new address[](count);
+        for (uint256 j = 0; j < count; j++) {
+            failedBanks[j] = failedBanksTemp[j];
+        }
+
+        return failedBanks; // Return the array of failed banks
+    }
+
 
     // Depositors deposit funds into banks
     function deposit(address _bank, address _token, uint256 _amount) external {
@@ -174,6 +215,7 @@ contract ERC20FDIC {
         deposits[msg.sender][_bank][_token].amount += _amount;
         deposits[msg.sender][_bank][_token].insuredAmount += _amount;
         banks[_bank].totalDeposits[_token] += _amount;
+        insurancePoolBalance += _amount;
 
         emit DepositMade(msg.sender, _bank, _token, _amount);
     }
@@ -201,6 +243,7 @@ contract ERC20FDIC {
 
         // Pay compensation in ERC-20 tokens
         IERC20(_token).transfer( msg.sender, compensation);
+        insurancePoolBalance -= compensation;
         emit CompensationPaid(msg.sender, _bank, _token, compensation);
 
         // Reset depositor's insured amount to prevent re-entrancy
@@ -213,6 +256,6 @@ contract ERC20FDIC {
 
     // Function to check the contract balance (insurance pool)
     function getInsurancePoolBalance() external view returns (uint256) {
-        return address(this).balance;
+        return insurancePoolBalance;
     }
 }
