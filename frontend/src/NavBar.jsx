@@ -10,6 +10,7 @@ import MenuItem from '@mui/material/MenuItem';
 import Button from '@mui/material/Button';
 import IconButton from '@mui/material/IconButton';
 import AccountCircle from '@mui/icons-material/AccountCircle';
+import { Box } from '@mui/material';
 import { useTheme } from '@mui/material/styles';
 
 const NavBar = () => {
@@ -74,18 +75,31 @@ const NavBar = () => {
             </MenuItem>
           ))}
         </Menu>
-
+        <Box flexGrow={.01} />
         {/* Account & Wallet Info */}
-        <IconButton
-          edge="end"
-          aria-label="account"
-          aria-controls="account-menu"
-          aria-haspopup="true"
-          onClick={handleAccountClick}
-          color="inherit"
-        >
-          <AccountCircle />
-        </IconButton>
+        {loggedIn ? (
+
+            <Button
+              edge="end"
+              aria-label="account"
+              aria-controls="account-menu"
+              aria-haspopup="true"
+              onClick={handleAccountClick}
+            >
+            {account ? `${account.slice(0, 6)}...${account.slice(-4)}` : 'Logged In'}
+            </Button>
+
+        ) : (
+          <Button
+            variant="contained"
+            color="secondary"
+            onClick={login}
+            sx={{ ml: 2 }}
+          >
+            Login
+          </Button>
+        )}
+
         <Menu
           id="account-menu"
           anchorEl={anchorEl}

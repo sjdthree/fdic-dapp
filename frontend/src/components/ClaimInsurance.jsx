@@ -5,17 +5,25 @@ import { isAddress } from 'ethers';
 import './ClaimInsurance.css';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faShieldAlt } from '@fortawesome/free-solid-svg-icons';
+import { notify } from './ToastNotifications';
+import { useLoading } from '../LoadingContext';
+import LoadingOverlay from './LoadingOverlay';
 
 const defaultBankAddress = import.meta.env.VITE_DEFAULT_BANK_ADDRESS;
 const defaultTokenAddress = import.meta.env.VITE_DEFAULT_TOKEN_ADDRESS;
+const steps = ['Approving', 'Depositing', 'Finalizing'];
 
 const ClaimInsurance = () => {
   const fdicContract = useFDICContract();
   const [bankAddress, setBankAddress] = useState('');
-  const [isLoading, setIsLoading] = useState(false);
+  const { isLoading, setIsLoading } = useLoading();
   const [claimAmount, setClaimAmount] = useState('');
   const [error, setError] = useState(null); // Error state
   const [tokenAddress, setTokenAddress] = useState('');
+  const [activeStep, setActiveStep] = useState(0);
+
+  if (!bankAddress) {setBankAddress(defaultBankAddress);}
+  if (!tokenAddress) {setTokenAddress(defaultTokenAddress);}
 
   if (!fdicContract) {
     return <div>Please log in to claim insurance.</div>;
@@ -29,21 +37,26 @@ const ClaimInsurance = () => {
     }
 
     if (!bankAddress.trim()) {
-      alert('Please enter the bank address.');
+      notify('Please enter the bank address.');
       return;
     }
     if (!isAddress(bankAddress)) {
-      alert('Please enter a valid Ethereum address for the bank.');
+      notify('Please enter a valid Ethereum address for the bank.');
       return;
     }
     try {
       setIsLoading(true);
+      setActiveStep(1);
       const tx = await fdicContract.claimInsurance(bankAddress, tokenAddress);
       await tx.wait();
+      setActiveStep(2);
       setIsLoading(false);
-      alert('Insurance claimed!');
+      notify('Insurance claimed!');
+      setActiveStep(3)
+      setActiveStep(0);
     } catch (error) {
       setIsLoading(false);
+      setActiveStep(0);
       console.error('Claim failed:', error);
       handleClaimError(error);
     }
@@ -71,7 +84,7 @@ const ClaimInsurance = () => {
     <h2><FontAwesomeIcon icon={faShieldAlt} /> Claim Insurance</h2>
     <p>To claim your insured amount, enter the claim details below.</p>
     <div className="form-group">
-      <label htmlFor="claim-amount">Claim Amount (ETH):</label>
+      <label htmlFor="claim-amount">Claim Amount:</label>
       <input
         type="number"
         id="claim-amount"
@@ -95,7 +108,7 @@ const ClaimInsurance = () => {
           type="text"
           value={bankAddress}
           onChange={(e) => setBankAddress(e.target.value)}
-          placeholder={defaultBankAddress}
+          placeholder="Enter bank address"
         />
         <p>
           This is the blockchain address of the failed bank. If the bank has 
@@ -107,12 +120,13 @@ const ClaimInsurance = () => {
           value={tokenAddress}
           onChange={(e) => setTokenAddress(e.target.value)}
           // disabled
-          placeholder={defaultTokenAddress}
+          placeholder="Enter token address"
         />
         <p>
           This is the blockchain address of the failed bank. If the bank has 
           failed, you will be able to claim the insurance amount.
         </p>
+        <LoadingOverlay open={isLoading} currentStep={activeStep} steps={steps} />
       <button className="claim-button" onClick={handleClaim}>
       Claim Insurance
       </button>

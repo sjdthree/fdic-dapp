@@ -9,9 +9,13 @@ import { parseEther, isAddress, ethers } from 'ethers';
 import { BlockchainContext } from '../BlockchainProvider';
 import ERC20FDIC from '../abis/ERC20FDIC.json';
 import USDCERC20 from '../abis/USDCERC20.json';
+import { useLoading } from '../LoadingContext';
+import { notify } from './ToastNotifications';
+import LoadingOverlay from './LoadingOverlay';
 
 const defaultBankAddress = import.meta.env.VITE_DEFAULT_BANK_ADDRESS;
 const defaultTokenAddress = import.meta.env.VITE_DEFAULT_TOKEN_ADDRESS;
+const steps = ['Approving', 'Depositing', 'Finalizing'];
 
 const Deposit = () => {
   const fdicContract = useFDICContract();
@@ -20,10 +24,13 @@ const Deposit = () => {
   const [depositAmount, setDepositAmount] = useState('');
   const [tokenAddress, setTokenAddress] = useState('');
   const [error, setError] = useState(null); // Error state
-
+  const { isLoading, setIsLoading } = useLoading();
+  const [activeStep, setActiveStep] = useState(0);
+  
   const INSURANCE_LIMIT = 250000; // 250,000 ETH insurance limit
 
-  const [isLoading, setIsLoading] = useState(false);
+  if (!bankAddress) {setBankAddress(defaultBankAddress);}
+  if (!tokenAddress) {setTokenAddress(defaultTokenAddress);}
 
   const handleDeposit = async () => {
     setError(null); // Clear previous errors
@@ -32,11 +39,11 @@ const Deposit = () => {
       return;
     }
     if (!bankAddress.trim()) {
-      alert('Please enter the bank address.');
+      notify('Please enter the bank address.');
       return;
     }
     if (!isAddress(bankAddress)) {
-      alert('Please enter a valid Ethereum address for the bank.');
+      notify('Please enter a valid Ethereum address for the bank.');
       return;
     }
     const numericAmount = parseFloat(depositAmount); // Convert to a number
@@ -54,26 +61,26 @@ const Deposit = () => {
     }
     try {
       setIsLoading(true);
-      console.log('Deposit amount:', depositAmount);
-      console.log('Bank address:', bankAddress);
-      console.log('Token address:', tokenAddress);
-      console.log('FDIC Contract:', fdicContract);
-      console.log('Provider:', provider);
+      setActiveStep(1); 
       const amountInWei = ethers.parseUnits(depositAmount, 18); // Assuming the token has 18 decimals
       // Approve FDIC contract to spend tokens
       const signer = await provider.getSigner();
       const tokenContract = new ethers.Contract(tokenAddress, USDCERC20.abi, signer);
-      
-      const approvalTx = await tokenContract.approve(fdicContract, ethers.parseUnits(depositAmount, 18));
+      const approvalTx = await tokenContract.approve(fdicContract, ethers.parseUnits(depositAmount, 18));     
       await approvalTx.wait();
+
       console.log('Approval successful', approvalTx);
+      setActiveStep(2); 
       const tx = await fdicContract.deposit(bankAddress, tokenAddress, amountInWei);
       await tx.wait();
+      setActiveStep(3); 
       console.log('Deposit successful', tx);
-      alert(`Deposit successful: ${depositAmount} tokens to ${bankAddress}`);
+      notify(`Deposit successful: ${depositAmount} tokens to ${bankAddress}`);
       setIsLoading(false);
+      setActiveStep(0); 
     } catch (error) {
       setIsLoading(false);
+      setActiveStep(0); 
       console.error(error);
       handleDepositError(error);
     }
@@ -112,7 +119,7 @@ const Deposit = () => {
           type="text"
           value={bankAddress}
           onChange={(e) => setBankAddress(e.target.value)}
-          placeholder={defaultBankAddress}
+          placeholder="Enter bank address"
         />
         <p>
           The blockchain address of the bank where you want to deposit your 
@@ -126,7 +133,7 @@ const Deposit = () => {
           value={tokenAddress}
           // disabled
           onChange={(e) => setTokenAddress(e.target.value)}
-          placeholder={defaultTokenAddress}
+          placeholder="Enter token address"
         />
         <p>
           The address of the token to deposit your 
@@ -143,6 +150,7 @@ const Deposit = () => {
           placeholder="Enter deposit amount"
         />
       </div>
+      <LoadingOverlay open={isLoading} currentStep={activeStep} steps={steps} theme="darkTranslucent"/>
       <button className="deposit-button" onClick={handleDeposit}>
         Deposit Funds
       </button>

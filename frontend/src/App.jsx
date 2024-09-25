@@ -7,6 +7,11 @@ import ClaimInsurance from './components/ClaimInsurance';
 import RegulatorPanel from './components/RegulatorPanel';
 import NavBar from './NavBar'; // Import the new NavBar component
 import './App.css';
+import { LoadingProvider, useLoading } from './LoadingContext';
+import LoadingOverlay from './components/LoadingOverlay';
+import ToastNotifications from './components/ToastNotifications';
+import StepperProgress from './components/StepperProgress';
+
 const theme = createTheme({
   palette: {
     primary: {
@@ -92,11 +97,15 @@ function App() {
     <ThemeProvider theme={theme}>
       <BlockchainProvider>
         <Router>
+          <LoadingProvider >
           <NavBar /> {/* Add NavBar here to be available on all routes */}
+          <LoadingOverlay open={false}/>
+          <ToastNotifications />
           <Routes>
             <Route path="/" element={<MainApp />} />
             <Route path="/regulator" element={<RegulatorPanel />} />
           </Routes>
+          </LoadingProvider>
         </Router>
       </BlockchainProvider>
     </ThemeProvider>

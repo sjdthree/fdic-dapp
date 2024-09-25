@@ -30,12 +30,12 @@ test('renders ClaimInsurance component and handles claim', async () => {
     target: { value: '0x0000000000000000000000000000000000000001' },
   });
 
-  // Mock window.alert
-  window.alert = jest.fn();
+  // Mock window.notify
+  window.notify = jest.fn();
 
   // Click the claim button
   fireEvent.click(screen.getByText(/Claim/i));
 
-  // Expect the alert to be called with 'Insurance claimed!'
+  // Expect the notify to be called with 'Insurance claimed!'
   await screen.findByText(/Processing.../i);
 });

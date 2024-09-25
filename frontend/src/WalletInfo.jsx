@@ -66,7 +66,7 @@ const WalletInfo = () => {
           </Typography>
           <Box sx={{ display: 'flex', alignItems: 'center', marginTop: 1 }}>
             <Typography variant="body1" component="div">
-              <strong>Address:</strong> {account.slice(0, 6)}...{account.slice(-4)}
+              <strong>Address:</strong> {account}
             </Typography>
             <Tooltip title={copySuccess ? 'Copied!' : 'Copy Address'} sx={{ marginLeft: 1 }}>
               <IconButton onClick={handleCopy}>
