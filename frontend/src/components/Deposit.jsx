@@ -150,7 +150,7 @@ const Deposit = () => {
           placeholder="Enter deposit amount"
         />
       </div>
-      <LoadingOverlay open={isLoading} currentStep={activeStep} steps={steps} />
+      <LoadingOverlay open={isLoading} currentStep={activeStep} steps={steps} theme="darkTranslucent"/>
       <button className="deposit-button" onClick={handleDeposit}>
         Deposit Funds
       </button>
