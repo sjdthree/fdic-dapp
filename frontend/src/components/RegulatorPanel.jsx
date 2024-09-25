@@ -193,18 +193,13 @@ const RegulatorPanel = () => {
           </Typography>
         </Box>
 
-        {/* Error Message for Incorrect Wallet */}
-        {!isCorrectWallet && (
-          notify('You are not the regulator. Please switch to the correct wallet to perform actions.')
-        )}
-
         {/* Register Bank Section */}
         <Box mb={4}>
           <Typography variant="h5" gutterBottom>
             Register a Bank
           </Typography>
           <Grid2 container spacing={2}>
-            <Grid2 item xs={12} md={8}>
+            <Grid2 xs={12} md={8}>
               <TextField
                 label="Enter Bank Address"
                 fullWidth
@@ -213,7 +208,7 @@ const RegulatorPanel = () => {
                 disabled={!isCorrectWallet}
               />
             </Grid2>
-            <Grid2 item xs={12} md={4}>
+            <Grid2 xs={12} md={4}>
               <Button
                 variant="contained"
                 color="primary"
@@ -233,7 +228,7 @@ const RegulatorPanel = () => {
             Mark Bank as Failed
           </Typography>
           <Grid2 container spacing={2}>
-            <Grid2 item xs={12} md={8}>
+            <Grid2 xs={12} md={8}>
               <TextField
                 label="Enter Bank Address"
                 fullWidth
@@ -242,7 +237,7 @@ const RegulatorPanel = () => {
                 disabled={!isCorrectWallet}
               />
             </Grid2>
-            <Grid2 item xs={12} md={4}>
+            <Grid2 xs={12} md={4}>
               <Button
                 variant="contained"
                 color="secondary"
@@ -262,7 +257,7 @@ const RegulatorPanel = () => {
             Add New Regulator
           </Typography>
           <Grid2 container spacing={2}>
-            <Grid2 item xs={12} md={8}>
+            <Grid2 xs={12} md={8}>
               <TextField
                 label="New Regulator Address"
                 fullWidth
@@ -271,7 +266,7 @@ const RegulatorPanel = () => {
                 disabled={!isCorrectWallet}
               />
             </Grid2>
-            <Grid2 item xs={12} md={4}>
+            <Grid2 xs={12} md={4}>
               <Button
                 variant="contained"
                 color="primary"
