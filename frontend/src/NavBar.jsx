@@ -8,8 +8,7 @@ import Typography from '@mui/material/Typography';
 import Menu from '@mui/material/Menu';
 import MenuItem from '@mui/material/MenuItem';
 import Button from '@mui/material/Button';
-import IconButton from '@mui/material/IconButton';
-import AccountCircle from '@mui/icons-material/AccountCircle';
+import ThreeDButton from './components/ThreeDButton';
 import { Box } from '@mui/material';
 import { useTheme } from '@mui/material/styles';
 
@@ -50,15 +49,10 @@ const NavBar = () => {
           On-Chain FDIC Insurance DApp
         </Typography>
 
-        {/* Network Selector */}
-        <Button
-          aria-controls="network-menu"
-          aria-haspopup="true"
+        <ThreeDButton
+          label={selectedValue ? `Network: ${selectedValue}` : 'Select Network'}
           onClick={handleNetworkClick}
-          sx={{ color: 'white' }}
-        >
-          {selectedValue ? `Network: ${selectedValue}` : 'Select Network'}
-        </Button>
+        />
         <Menu
           id="network-menu"
           anchorEl={networkEl}
@@ -78,27 +72,16 @@ const NavBar = () => {
         <Box flexGrow={.01} />
         {/* Account & Wallet Info */}
         {loggedIn ? (
-
-            <Button
-              edge="end"
-              aria-label="account"
-              aria-controls="account-menu"
-              aria-haspopup="true"
-              onClick={handleAccountClick}
-            >
-            {account ? `${account.slice(0, 6)}...${account.slice(-4)}` : 'Logged In'}
-            </Button>
-
+            <ThreeDButton
+            label={account ? `${account.slice(0, 6)}...${account.slice(-4)}` : 'Logged In'}
+            onClick={handleAccountClick}
+            />
         ) : (
-          <Button
-            variant="contained"
-            color="secondary"
-            onClick={login}
-            sx={{ ml: 2 }}
-          >
-            Login
-          </Button>
-        )}
+          <ThreeDButton
+          label="Login"
+          onClick={login}
+          />
+          )}
 
         <Menu
           id="account-menu"

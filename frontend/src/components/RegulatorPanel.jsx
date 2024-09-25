@@ -89,6 +89,7 @@ const RegulatorPanel = () => {
       setIsLoading(true);
       setActiveStep(1); 
       const balance = await contract.getInsurancePoolBalance(); // Reading data from the smart contract
+      console.log("Insurance pool balance:", balance);
       setInsurancePoolBalance(ethers.formatEther(balance)); // Format balance in ether
       setIsLoading(false);
       setActiveStep(0); 
@@ -175,100 +176,117 @@ const RegulatorPanel = () => {
   };
 
   return (
-    <Box p={3}>
-      <Paper elevation={3} sx={{ padding: 3 }}>
+    <Box p={4}>
+      <Paper elevation={3} sx={{ padding: 4 }}>
+        {/* Page Header */}
         <Typography variant="h4" gutterBottom>
           Regulator Panel
         </Typography>
 
-        <Typography variant="body1" gutterBottom>
-          Contract Creator (Regulator): {creator || "Not available"}
-        </Typography>
+        {/* Contract Creator and Insurance Pool Balance */}
+        <Box mb={4}>
+          <Typography variant="body1" gutterBottom>
+            Contract Creator (Regulator): {creator || "Not available"}
+          </Typography>
+          <Typography variant="body1" gutterBottom>
+            Insurance Pool Balance: {insurancePoolBalance} ETH
+          </Typography>
+        </Box>
 
-        <Typography variant="body1" gutterBottom>
-          Insurance Pool Balance: {insurancePoolBalance} ETH
-        </Typography>
-
+        {/* Error Message for Incorrect Wallet */}
         {!isCorrectWallet && (
-          <Grid2 severity="error" sx={{ marginBottom: 3 }}>
-            You are not the regulator. Please switch to the correct wallet to
-            perform actions.
-          </Grid2>
+          notify('You are not the regulator. Please switch to the correct wallet to perform actions.')
         )}
 
         {/* Register Bank Section */}
-        <Grid2 container spacing={2} sx={{ marginBottom: 3 }}>
-          <Grid2 xs={12}>
-            <Typography variant="h5">Register a Bank</Typography>
+        <Box mb={4}>
+          <Typography variant="h5" gutterBottom>
+            Register a Bank
+          </Typography>
+          <Grid2 container spacing={2}>
+            <Grid2 item xs={12} md={8}>
+              <TextField
+                label="Enter Bank Address"
+                fullWidth
+                value={newBankAddress}
+                onChange={(e) => setNewBankAddress(e.target.value)}
+                disabled={!isCorrectWallet}
+              />
+            </Grid2>
+            <Grid2 item xs={12} md={4}>
+              <Button
+                variant="contained"
+                color="primary"
+                onClick={registerBank}
+                disabled={!isCorrectWallet}
+                fullWidth
+              >
+                Register Bank
+              </Button>
+            </Grid2>
           </Grid2>
-          <Grid2 xs={12} md={8}>
-            <TextField
-              label="Enter Bank Address"
-              fullWidth
-              value={newBankAddress}
-              onChange={(e) => setNewBankAddress(e.target.value)}
-              disabled={!isCorrectWallet}
-            />
-          </Grid2>
-          <Grid2 xs={12} md={4}>
-          <LoadingOverlay open={isLoading} currentStep={activeStep} steps={steps} />
-            <Button
-              variant="contained"
-              color="primary"
-              onClick={registerBank}
-              disabled={!isCorrectWallet}
-              fullWidth
-            >
-              Register Bank
-            </Button>
-          </Grid2>
-        </Grid2>
+        </Box>
 
         {/* Fail Bank Section */}
-        <Grid2 container spacing={2}>
-          <Grid2 xs={12}>
-            <Typography variant="h5">Mark Bank as Failed</Typography>
+        <Box mb={4}>
+          <Typography variant="h5" gutterBottom>
+            Mark Bank as Failed
+          </Typography>
+          <Grid2 container spacing={2}>
+            <Grid2 item xs={12} md={8}>
+              <TextField
+                label="Enter Bank Address"
+                fullWidth
+                value={bankToFail}
+                onChange={(e) => setBankToFail(e.target.value)}
+                disabled={!isCorrectWallet}
+              />
+            </Grid2>
+            <Grid2 item xs={12} md={4}>
+              <Button
+                variant="contained"
+                color="secondary"
+                onClick={failBank}
+                disabled={!isCorrectWallet}
+                fullWidth
+              >
+                Fail Bank
+              </Button>
+            </Grid2>
           </Grid2>
-          <Grid2 xs={12} md={8}>
-            <TextField
-              label="Enter Bank Address"
-              fullWidth
-              value={bankToFail}
-              onChange={(e) => setBankToFail(e.target.value)}
-              disabled={!isCorrectWallet}
-            />
+        </Box>
+
+        {/* Add Regulator Section */}
+        <Box mb={4}>
+          <Typography variant="h5" gutterBottom>
+            Add New Regulator
+          </Typography>
+          <Grid2 container spacing={2}>
+            <Grid2 item xs={12} md={8}>
+              <TextField
+                label="New Regulator Address"
+                fullWidth
+                value={newRegulatorAddress}
+                onChange={(e) => setNewRegulatorAddress(e.target.value)}
+                disabled={!isCorrectWallet}
+              />
+            </Grid2>
+            <Grid2 item xs={12} md={4}>
+              <Button
+                variant="contained"
+                color="primary"
+                onClick={handleAddRegulator}
+                disabled={!isCorrectWallet}
+                fullWidth
+              >
+                Add Regulator
+              </Button>
+            </Grid2>
           </Grid2>
-          <Grid2 xs={12} md={4}>
-          <LoadingOverlay open={isLoading} currentStep={activeStep} steps={steps} />
-            <Button
-              variant="contained"
-              color="secondary"
-              onClick={failBank}
-              disabled={!isCorrectWallet}
-              fullWidth
-            >
-              Fail Bank
-            </Button>
-          </Grid2>
-        </Grid2>
-        <Grid2 xs={12} md={6}>
-          <TextField
-            label="New Regulator Address"
-            value={newRegulatorAddress}
-            onChange={(e) => setNewRegulatorAddress(e.target.value)}
-            disabled={!isCorrectWallet}
-          />
-        </Grid2>
-        <Grid2 xs={12} md={6}>
+        </Box>
+
+        {/* Loading Overlay */}
         <LoadingOverlay open={isLoading} currentStep={activeStep} steps={steps} />
-          <Button
-            variant="contained"
-            onClick={handleAddRegulator}
-            disabled={!isCorrectWallet}
-          >
-            Add Regulator
-          </Button>
-        </Grid2>
       </Paper>
     </Box>
   );
