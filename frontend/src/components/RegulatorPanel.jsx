@@ -8,14 +8,17 @@ import {
   Typography,
   Box,
   Grid2,
-  Alert,
   Paper,
 } from "@mui/material";
+import { useLoading } from '../LoadingContext';
+import { notify } from './ToastNotifications';
+import LoadingOverlay from './LoadingOverlay';
 
 const fdicContractAddress = import.meta.env.VITE_FDIC_CONTRACT_ADDRESS;
 const regulatorWallet = import.meta.env.VITE_REGULATOR_WALLET;
 const defaultBankAddress = import.meta.env.VITE_DEFAULT_BANK_ADDRESS;
 const defaultTokenAddress = import.meta.env.VITE_DEFAULT_TOKEN_ADDRESS;
+const steps = ['Initializing', 'Processing', 'Finalizing'];
 
 const RegulatorPanel = () => {
   const { provider, account } = useContext(BlockchainContext);
@@ -26,6 +29,8 @@ const RegulatorPanel = () => {
   const [insurancePoolBalance, setInsurancePoolBalance] = useState("0");
   const [newRegulatorAddress, setNewRegulatorAddress] = useState("");
   const [isCorrectWallet, setIsCorrectWallet] = useState(false);
+  const { isLoading, setIsLoading } = useLoading();
+  const [activeStep, setActiveStep] = useState(0);
 
   // Check if the connected account is the correct regulator wallet
   useEffect(() => {
@@ -46,8 +51,10 @@ const RegulatorPanel = () => {
   useEffect(() => {
     const initContract = async () => {
       if (provider && account) {
+        setActiveStep(1); 
         try {
           console.log("Initializing contract...");
+          setIsLoading(true); // Show loading spinner
           const signer = await provider.getSigner(); // Use a signer for writing transactions
 
           const fdicContract = new ethers.Contract(
@@ -55,13 +62,19 @@ const RegulatorPanel = () => {
             ERC20FDIC.abi,
             signer
           );
+          setActiveStep(2); 
           setContract(fdicContract);
           console.log("Contract initialized:", fdicContract);
+          setIsLoading(false); // Show loading spinner
+          setActiveStep(3); 
         } catch (error) {
+          setIsLoading(false);
+          setActiveStep(0); 
           console.error("Error initializing contract:", error);
         }
       } else {
         console.log("No provider or account found in initContract");
+        setIsLoading(false);
       }
     };
 
@@ -73,8 +86,12 @@ const RegulatorPanel = () => {
     if (!contract) return;
 
     try {
+      setIsLoading(true);
+      setActiveStep(1); 
       const balance = await contract.getInsurancePoolBalance(); // Reading data from the smart contract
       setInsurancePoolBalance(ethers.formatEther(balance)); // Format balance in ether
+      setIsLoading(false);
+      setActiveStep(0); 
     } catch (error) {
       console.error("Error fetching insurance pool balance:", error);
     }
@@ -90,46 +107,70 @@ const RegulatorPanel = () => {
   // Register a new bank
   const registerBank = async () => {
     if (!newBankAddress) {
-      alert("Please enter a valid bank address.");
+      notify("Please enter a valid bank address.");
       return;
     }
 
     try {
+      setIsLoading(true);
+      setActiveStep(1); 
       const tx = await contract.registerBank(newBankAddress);
+      setActiveStep(2); 
       await tx.wait();
-      alert(`Bank ${newBankAddress} registered successfully.`);
+      setActiveStep(3); 
+      notify(`Bank ${newBankAddress} registered successfully.`);
       setNewBankAddress(""); // Reset the input field
+      setIsLoading(false);
+      setActiveStep(0); 
     } catch (error) {
+      setIsLoading(false);
+      setActiveStep(0); 
       console.error("Error registering bank:", error);
-      alert("Bank registration failed.");
+      notify("Bank registration failed.");
     }
   };
   // Add a new regulator
   const handleAddRegulator = async () => {
     try {
+      setIsLoading(true);
+      setActiveStep(1); 
       const tx = await contract.addRegulator(newRegulatorAddress);
+      setActiveStep(2); 
       await tx.wait();
-      alert(`Regulator ${newRegulatorAddress} added successfully.`);
+      setActiveStep(3); 
+      notify(`Regulator ${newRegulatorAddress} added successfully.`);
+      setIsLoading(false);
+      setActiveStep(0); 
     } catch (error) {
+      setIsLoading(false);
+      setActiveStep(0); 
       console.error("Error adding regulator:", error);
-      alert("Adding regulator failed.");
+      notify("Adding regulator failed.");
     }
   };
   // Mark a bank as failed
   const failBank = async () => {
     if (!bankToFail) {
-      alert("Please enter a valid bank address.");
+      notify("Please enter a valid bank address.");
       return;
     }
 
     try {
+      setIsLoading(true);
+      setActiveStep(1);
       const tx = await contract.failBank(bankToFail);
+      setActiveStep(2);
       await tx.wait();
-      alert(`Bank ${bankToFail} marked as failed.`);
+      setActiveStep(3);
+      notify(`Bank ${bankToFail} marked as failed.`);
       setBankToFail(""); // Reset the input field
+      setActiveStep(0);
+      setIsLoading(false);
     } catch (error) {
+      setIsLoading(false);
+      setActiveStep(0);
       console.error("Error failing bank:", error);
-      alert("Failing bank failed.");
+      notify("Failing bank failed.");
     }
   };
 
@@ -149,10 +190,10 @@ const RegulatorPanel = () => {
         </Typography>
 
         {!isCorrectWallet && (
-          <Alert severity="error" sx={{ marginBottom: 3 }}>
+          <Grid2 severity="error" sx={{ marginBottom: 3 }}>
             You are not the regulator. Please switch to the correct wallet to
             perform actions.
-          </Alert>
+          </Grid2>
         )}
 
         {/* Register Bank Section */}
@@ -170,6 +211,7 @@ const RegulatorPanel = () => {
             />
           </Grid2>
           <Grid2 xs={12} md={4}>
+          <LoadingOverlay open={isLoading} currentStep={activeStep} steps={steps} />
             <Button
               variant="contained"
               color="primary"
@@ -197,6 +239,7 @@ const RegulatorPanel = () => {
             />
           </Grid2>
           <Grid2 xs={12} md={4}>
+          <LoadingOverlay open={isLoading} currentStep={activeStep} steps={steps} />
             <Button
               variant="contained"
               color="secondary"
@@ -217,6 +260,7 @@ const RegulatorPanel = () => {
           />
         </Grid2>
         <Grid2 xs={12} md={6}>
+        <LoadingOverlay open={isLoading} currentStep={activeStep} steps={steps} />
           <Button
             variant="contained"
             onClick={handleAddRegulator}

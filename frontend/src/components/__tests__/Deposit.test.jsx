@@ -33,12 +33,12 @@ test('renders Deposit component and handles deposit', async () => {
     target: { value: '1' },
   });
 
-  // Mock window.alert
-  window.alert = jest.fn();
+  // Mock window.notify
+  window.notify = jest.fn();
 
   // Click the deposit button
   fireEvent.click(screen.getByText(/Deposit/i));
 
-  // Expect the alert to be called with 'Deposit successful!'
+  // Expect the notify to be called with 'Deposit successful!'
   await screen.findByText(/Processing.../i);
 });
