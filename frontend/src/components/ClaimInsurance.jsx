@@ -26,7 +26,7 @@ const ClaimInsurance = () => {
   if (!tokenAddress) {setTokenAddress(defaultTokenAddress);}
 
   if (!fdicContract) {
-    return <div>Please log in to claim insurance.</div>;
+    return <div>Please login to claim insurance.</div>;
   }
 
   const handleClaim = async () => {

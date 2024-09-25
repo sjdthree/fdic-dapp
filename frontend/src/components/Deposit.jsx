@@ -32,6 +32,10 @@ const Deposit = () => {
   if (!bankAddress) {setBankAddress(defaultBankAddress);}
   if (!tokenAddress) {setTokenAddress(defaultTokenAddress);}
 
+  if (!fdicContract) {
+    return <div>Please login to make a deposit.</div>;
+  }
+
   const handleDeposit = async () => {
     setError(null); // Clear previous errors
     if (!provider) {
