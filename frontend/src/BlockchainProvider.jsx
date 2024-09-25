@@ -42,6 +42,11 @@ export const BlockchainProvider = ({ children }) => {
           clientId,
           web3AuthNetwork: "sapphire_devnet",
           privateKeyProvider,
+          uxMode: "popup",
+          uiConfig: {
+            theme: "dark", 
+            loginMethodsOrder: ["google", "reddit", "facebook"],
+          },
         });
 
         const openloginAdapter = new OpenloginAdapter({
