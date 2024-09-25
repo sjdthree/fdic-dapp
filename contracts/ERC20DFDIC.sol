@@ -107,6 +107,7 @@ contract ERC20FDIC {
     event BankRegistered(address indexed bank);
     event DepositMade(address indexed depositor, address indexed bank, address indexed token, uint256 amount);
     event BankFailed(address indexed bank);
+    event BankUnfailed(address indexed bank);
     event CompensationPaid(address indexed depositor, address indexed bank, address indexed token, uint256 amount);
     event RegulatorAdded(address indexed regulator);
     event RegulatorRemoved(address indexed regulator);
@@ -171,6 +172,7 @@ contract ERC20FDIC {
         IERC20(_token).transferFrom(msg.sender, address(this), _amount);
 
         deposits[msg.sender][_bank][_token].amount += _amount;
+        deposits[msg.sender][_bank][_token].insuredAmount += _amount;
         banks[_bank].totalDeposits[_token] += _amount;
 
         emit DepositMade(msg.sender, _bank, _token, _amount);
@@ -183,18 +185,27 @@ contract ERC20FDIC {
         emit BankFailed(_bank);
     }
 
+        // Regulator unfails bank
+    function unfailBank(address _bank) external onlyRegulator {
+        require(banks[_bank].isRegistered, "Bank is not registered");
+        require(banks[_bank].isFailed, "Bank has not failed");
+        banks[_bank].isFailed = false;
+        emit BankUnfailed(_bank);
+    }
+
     // Depositors claim insurance after bank failure
     function claimInsurance(address _bank, address _token) external {
         require(banks[_bank].isFailed, "Bank has not failed");
         uint256 compensation = deposits[msg.sender][_bank][_token].insuredAmount;
         require(compensation > 0, "No insured amount to claim");
 
-        // Reset depositor's insured amount to prevent re-entrancy
-        deposits[msg.sender][_bank][_token].insuredAmount = 0;
-
         // Pay compensation in ERC-20 tokens
         IERC20(_token).transfer( msg.sender, compensation);
         emit CompensationPaid(msg.sender, _bank, _token, compensation);
+
+        // Reset depositor's insured amount to prevent re-entrancy
+        deposits[msg.sender][_bank][_token].insuredAmount = 0;
+
     }
 
     // Function to fund the insurance pool (could be from bank premiums)
