@@ -10,15 +10,15 @@ import {
   Grid2,
   Paper,
 } from "@mui/material";
-import { useLoading } from '../LoadingContext';
-import { notify } from './ToastNotifications';
-import LoadingOverlay from './LoadingOverlay';
+import { useLoading } from "../LoadingContext";
+import { notify } from "./ToastNotifications";
+import LoadingOverlay from "./LoadingOverlay";
 
 const fdicContractAddress = import.meta.env.VITE_FDIC_CONTRACT_ADDRESS;
 const regulatorWallet = import.meta.env.VITE_REGULATOR_WALLET;
 const defaultBankAddress = import.meta.env.VITE_DEFAULT_BANK_ADDRESS;
 const defaultTokenAddress = import.meta.env.VITE_DEFAULT_TOKEN_ADDRESS;
-const steps = ['Initializing', 'Processing', 'Finalizing'];
+const steps = ["Initializing", "Processing", "Finalizing"];
 
 const RegulatorPanel = () => {
   const { provider, account } = useContext(BlockchainContext);
@@ -31,6 +31,9 @@ const RegulatorPanel = () => {
   const [isCorrectWallet, setIsCorrectWallet] = useState(false);
   const { isLoading, setIsLoading } = useLoading();
   const [activeStep, setActiveStep] = useState(0);
+  const [banks, setBanks] = useState([]); // State to hold all banks
+  const [failedBanks, setFailedBanks] = useState([]); // State for failed banks
+  const [regulators, setRegulators] = useState([]); // State for regulators
 
   // Check if the connected account is the correct regulator wallet
   useEffect(() => {
@@ -51,7 +54,7 @@ const RegulatorPanel = () => {
   useEffect(() => {
     const initContract = async () => {
       if (provider && account) {
-        setActiveStep(1); 
+        setActiveStep(1);
         try {
           console.log("Initializing contract...");
           setIsLoading(true); // Show loading spinner
@@ -62,14 +65,14 @@ const RegulatorPanel = () => {
             ERC20FDIC.abi,
             signer
           );
-          setActiveStep(2); 
+          setActiveStep(2);
           setContract(fdicContract);
           console.log("Contract initialized:", fdicContract);
           setIsLoading(false); // Show loading spinner
-          setActiveStep(3); 
+          setActiveStep(3);
         } catch (error) {
           setIsLoading(false);
-          setActiveStep(0); 
+          setActiveStep(0);
           console.error("Error initializing contract:", error);
         }
       } else {
@@ -87,21 +90,60 @@ const RegulatorPanel = () => {
 
     try {
       setIsLoading(true);
-      setActiveStep(1); 
+      setActiveStep(1);
       const balance = await contract.getInsurancePoolBalance(); // Reading data from the smart contract
       console.log("Insurance pool balance:", balance);
       setInsurancePoolBalance(ethers.formatEther(balance)); // Format balance in ether
       setIsLoading(false);
-      setActiveStep(0); 
+      setActiveStep(0);
     } catch (error) {
       console.error("Error fetching insurance pool balance:", error);
     }
   };
 
-  // Call fetchInsurancePoolBalance when the contract is initialized
+  // Fetch all banks
+  const fetchBanks = async () => {
+    if (!contract) return;
+
+    try {
+      const allBanks = await contract.getBanks();
+      setBanks(allBanks);
+    } catch (error) {
+      console.error("Error fetching banks:", error);
+    }
+  };
+
+  // Fetch all failed banks
+  const fetchFailedBanks = async () => {
+    if (!contract) return;
+
+    try {
+      const allFailedBanks = await contract.getFailedBanks();
+      setFailedBanks(allFailedBanks);
+    } catch (error) {
+      console.error("Error fetching failed banks:", error);
+    }
+  };
+
+  // Fetch all regulators
+  const fetchRegulators = async () => {
+    if (!contract) return;
+
+    try {
+      const allRegulators = await contract.getRegulators();
+      setRegulators(allRegulators);
+    } catch (error) {
+      console.error("Error fetching regulators:", error);
+    }
+  };
+
+  // Call all data pulls when the contract is initialized
   useEffect(() => {
     if (contract) {
       fetchInsurancePoolBalance();
+      fetchBanks();
+      fetchFailedBanks();
+      fetchRegulators();
     }
   }, [contract]);
 
@@ -114,18 +156,18 @@ const RegulatorPanel = () => {
 
     try {
       setIsLoading(true);
-      setActiveStep(1); 
+      setActiveStep(1);
       const tx = await contract.registerBank(newBankAddress);
-      setActiveStep(2); 
+      setActiveStep(2);
       await tx.wait();
-      setActiveStep(3); 
+      setActiveStep(3);
       notify(`Bank ${newBankAddress} registered successfully.`);
       setNewBankAddress(""); // Reset the input field
       setIsLoading(false);
-      setActiveStep(0); 
+      setActiveStep(0);
     } catch (error) {
       setIsLoading(false);
-      setActiveStep(0); 
+      setActiveStep(0);
       console.error("Error registering bank:", error);
       notify("Bank registration failed.");
     }
@@ -134,17 +176,17 @@ const RegulatorPanel = () => {
   const handleAddRegulator = async () => {
     try {
       setIsLoading(true);
-      setActiveStep(1); 
+      setActiveStep(1);
       const tx = await contract.addRegulator(newRegulatorAddress);
-      setActiveStep(2); 
+      setActiveStep(2);
       await tx.wait();
-      setActiveStep(3); 
+      setActiveStep(3);
       notify(`Regulator ${newRegulatorAddress} added successfully.`);
       setIsLoading(false);
-      setActiveStep(0); 
+      setActiveStep(0);
     } catch (error) {
       setIsLoading(false);
-      setActiveStep(0); 
+      setActiveStep(0);
       console.error("Error adding regulator:", error);
       notify("Adding regulator failed.");
     }
@@ -280,8 +322,66 @@ const RegulatorPanel = () => {
           </Grid2>
         </Box>
 
+        {/* Display All Banks */}
+        <Box mb={4}>
+          <Typography variant="h5" gutterBottom>
+            Registered Banks
+          </Typography>
+          {banks.length === 0 ? (
+            <Typography>No banks registered.</Typography>
+          ) : (
+            <List>
+              {banks.map((bank) => (
+                <ListItem key={bank}>
+                  <ListItemText primary={bank} />
+                </ListItem>
+              ))}
+            </List>
+          )}
+        </Box>
+
+        {/* Display Failed Banks */}
+        <Box mb={4}>
+          <Typography variant="h5" gutterBottom>
+            Failed Banks
+          </Typography>
+          {failedBanks.length === 0 ? (
+            <Typography>No failed banks.</Typography>
+          ) : (
+            <List>
+              {failedBanks.map((bank) => (
+                <ListItem key={bank}>
+                  <ListItemText primary={bank} />
+                </ListItem>
+              ))}
+            </List>
+          )}
+        </Box>
+
+        {/* Display Regulators */}
+        <Box mb={4}>
+          <Typography variant="h5" gutterBottom>
+            Current Regulators
+          </Typography>
+          {regulators.length === 0 ? (
+            <Typography>No regulators found.</Typography>
+          ) : (
+            <List>
+              {regulators.map((regulator) => (
+                <ListItem key={regulator}>
+                  <ListItemText primary={regulator} />
+                </ListItem>
+              ))}
+            </List>
+          )}
+        </Box>
+
         {/* Loading Overlay */}
-        <LoadingOverlay open={isLoading} currentStep={activeStep} steps={steps} />
+        <LoadingOverlay
+          open={isLoading}
+          currentStep={activeStep}
+          steps={steps}
+        />
       </Paper>
     </Box>
   );
