@@ -161,6 +161,12 @@ const RegulatorPanel = () => {
       return;
     }
 
+    // Check if the bank is already registered
+    if (banks.includes(newBankAddress)) {
+      notify("This bank is already registered.");
+      return;
+    }
+
     try {
       setIsLoading(true);
       setActiveStep(1);
