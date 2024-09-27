@@ -9,6 +9,9 @@ import {
   Box,
   Grid2,
   Paper,
+  List,
+  ListItem,
+  ListItemText,
 } from "@mui/material";
 import { useLoading } from "../LoadingContext";
 import { notify } from "./ToastNotifications";
@@ -39,14 +42,13 @@ const RegulatorPanel = () => {
   useEffect(() => {
     if (contract) {
       const regCheck = async () => {
-        await contract.isRegulator(account);
+        const result = await contract.isRegulator(account);
+        setIsCorrectWallet(result);
       };
-      console.log(regCheck);
-      if (regCheck) {
-        setIsCorrectWallet(true);
-      } else {
+      regCheck().catch((error) => {
+        console.error("Error checking regulator status:", error);
         setIsCorrectWallet(false);
-      }
+      });
     }
   }, [contract, account]);
 
@@ -57,18 +59,18 @@ const RegulatorPanel = () => {
         setActiveStep(1);
         try {
           console.log("Initializing contract...");
-          setIsLoading(true); // Show loading spinner
-          const signer = await provider.getSigner(); // Use a signer for writing transactions
+          setIsLoading(true);
+          const signer = await provider.getSigner();
 
           const fdicContract = new ethers.Contract(
             fdicContractAddress,
             ERC20FDIC.abi,
             signer
           );
-          setActiveStep(2);
           setContract(fdicContract);
           console.log("Contract initialized:", fdicContract);
-          setIsLoading(false); // Show loading spinner
+          fetchInitialData(); // Fetch data after initialization
+          setIsLoading(false);
           setActiveStep(3);
         } catch (error) {
           setIsLoading(false);
@@ -84,6 +86,18 @@ const RegulatorPanel = () => {
     initContract();
   }, [provider, account]);
 
+  const fetchInitialData = async () => {
+    if (!contract) return;
+
+    // Fetch data in parallel
+    await Promise.all([
+      fetchInsurancePoolBalance(),
+      fetchBanks(),
+      fetchFailedBanks(),
+      fetchRegulators(),
+    ]);
+  };
+
   // Fetch the insurance pool balance from the contract
   const fetchInsurancePoolBalance = async () => {
     if (!contract) return;
@@ -91,9 +105,9 @@ const RegulatorPanel = () => {
     try {
       setIsLoading(true);
       setActiveStep(1);
-      const balance = await contract.getInsurancePoolBalance(); // Reading data from the smart contract
-      console.log("Insurance pool balance:", balance);
-      setInsurancePoolBalance(ethers.formatEther(balance)); // Format balance in ether
+      const balance = await contract.getInsurancePoolBalance();
+      console.log("Insurance pool balance:", balance.toString());
+      setInsurancePoolBalance(ethers.formatEther(balance));
       setIsLoading(false);
       setActiveStep(0);
     } catch (error) {
@@ -107,6 +121,7 @@ const RegulatorPanel = () => {
 
     try {
       const allBanks = await contract.getBanks();
+      console.log("All Banks:", allBanks);
       setBanks(allBanks);
     } catch (error) {
       console.error("Error fetching banks:", error);
@@ -119,6 +134,7 @@ const RegulatorPanel = () => {
 
     try {
       const allFailedBanks = await contract.getFailedBanks();
+      console.log("All Failed Banks:", allFailedBanks);
       setFailedBanks(allFailedBanks);
     } catch (error) {
       console.error("Error fetching failed banks:", error);
@@ -131,21 +147,12 @@ const RegulatorPanel = () => {
 
     try {
       const allRegulators = await contract.getRegulators();
+      console.log("All Regulators:", allRegulators);
       setRegulators(allRegulators);
     } catch (error) {
       console.error("Error fetching regulators:", error);
     }
   };
-
-  // Call all data pulls when the contract is initialized
-  useEffect(() => {
-    if (contract) {
-      fetchInsurancePoolBalance();
-      fetchBanks();
-      fetchFailedBanks();
-      fetchRegulators();
-    }
-  }, [contract]);
 
   // Register a new bank
   const registerBank = async () => {
@@ -158,39 +165,40 @@ const RegulatorPanel = () => {
       setIsLoading(true);
       setActiveStep(1);
       const tx = await contract.registerBank(newBankAddress);
-      setActiveStep(2);
       await tx.wait();
-      setActiveStep(3);
       notify(`Bank ${newBankAddress} registered successfully.`);
       setNewBankAddress(""); // Reset the input field
       setIsLoading(false);
-      setActiveStep(0);
+      fetchBanks(); // Refresh bank list
     } catch (error) {
       setIsLoading(false);
-      setActiveStep(0);
       console.error("Error registering bank:", error);
       notify("Bank registration failed.");
     }
   };
-  // Add a new regulator
+
+  // Add new regulator
   const handleAddRegulator = async () => {
+    if (!newRegulatorAddress) {
+      notify("Please enter a new regulator address.");
+      return;
+    }
+
     try {
       setIsLoading(true);
       setActiveStep(1);
       const tx = await contract.addRegulator(newRegulatorAddress);
-      setActiveStep(2);
       await tx.wait();
-      setActiveStep(3);
       notify(`Regulator ${newRegulatorAddress} added successfully.`);
       setIsLoading(false);
-      setActiveStep(0);
+      fetchRegulators(); // Refresh regulator list
     } catch (error) {
       setIsLoading(false);
-      setActiveStep(0);
       console.error("Error adding regulator:", error);
       notify("Adding regulator failed.");
     }
   };
+
   // Mark a bank as failed
   const failBank = async () => {
     if (!bankToFail) {
@@ -202,16 +210,13 @@ const RegulatorPanel = () => {
       setIsLoading(true);
       setActiveStep(1);
       const tx = await contract.failBank(bankToFail);
-      setActiveStep(2);
       await tx.wait();
-      setActiveStep(3);
       notify(`Bank ${bankToFail} marked as failed.`);
       setBankToFail(""); // Reset the input field
-      setActiveStep(0);
       setIsLoading(false);
+      fetchFailedBanks(); // Refresh failed bank list
     } catch (error) {
       setIsLoading(false);
-      setActiveStep(0);
       console.error("Error failing bank:", error);
       notify("Failing bank failed.");
     }
