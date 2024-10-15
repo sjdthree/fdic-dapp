@@ -11,6 +11,7 @@ import Button from '@mui/material/Button';
 import ThreeDButton from './components/ThreeDButton';
 import { Box } from '@mui/material';
 import { useTheme } from '@mui/material/styles';
+import CurrentBankingMarket from './components/CurrentBankingMarket';
 
 const NavBar = () => {
   const defaultNetwork = "PolygonAmoy";
@@ -48,6 +49,9 @@ const NavBar = () => {
         <Typography variant="h6" sx={{ flexGrow: 1 }}>
           On-Chain FDIC Insurance DApp
         </Typography>
+        
+        {/* Add the Current Banking Market Popup Link */}
+        {loggedIn ? (<CurrentBankingMarket /> ) : null}
 
         <ThreeDButton
           label={selectedValue ? `Network: ${selectedValue}` : 'Select Network'}

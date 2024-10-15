@@ -165,8 +165,10 @@ contract ERC20FDIC {
 
     // Function for regulator to register banks
     function registerBank(address _bank) external onlyRegulator {
-        banks[_bank].isRegistered = true;
-        bankArray.push(_bank);
+        if(!banks[_bank].isRegistered) {
+            banks[_bank].isRegistered = true;
+            bankArray.push(_bank);
+        } 
         emit BankRegistered(_bank);
     }
 
