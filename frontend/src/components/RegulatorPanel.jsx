@@ -9,13 +9,15 @@ import {
   Box,
   Grid2,
   Paper,
-  List,
-  ListItem,
-  ListItemText,
+  FormControl,
+  InputLabel,
+  Select,
+  MenuItem,
 } from "@mui/material";
 import { useLoading } from "../LoadingContext";
 import { notify } from "./ToastNotifications";
 import LoadingOverlay from "./LoadingOverlay";
+import BankStatusGrid from "./BankStatusGrid";
 
 const fdicContractAddress = import.meta.env.VITE_FDIC_CONTRACT_ADDRESS;
 const regulatorWallet = import.meta.env.VITE_REGULATOR_WALLET;
@@ -29,6 +31,7 @@ const RegulatorPanel = () => {
   const [creator, setCreator] = useState(regulatorWallet);
   const [newBankAddress, setNewBankAddress] = useState(defaultBankAddress);
   const [bankToFail, setBankToFail] = useState("");
+  const [bankToUnFail, setBankToUnFail] = useState("");
   const [insurancePoolBalance, setInsurancePoolBalance] = useState("0");
   const [newRegulatorAddress, setNewRegulatorAddress] = useState("");
   const [isCorrectWallet, setIsCorrectWallet] = useState(false);
@@ -37,6 +40,7 @@ const RegulatorPanel = () => {
   const [banks, setBanks] = useState([]); // State to hold all banks
   const [failedBanks, setFailedBanks] = useState([]); // State for failed banks
   const [regulators, setRegulators] = useState([]); // State for regulators
+  const [bankStatus, setbankStatus] = useState([]);
 
   // Check if the connected account is the correct regulator wallet
   useEffect(() => {
@@ -95,6 +99,7 @@ const RegulatorPanel = () => {
       fetchBanks(),
       fetchFailedBanks(),
       fetchRegulators(),
+      getBankStatus(),
     ]);
   };
 
@@ -154,6 +159,15 @@ const RegulatorPanel = () => {
     }
   };
 
+  const getBankStatus = () => {
+    const bankStatus = [];
+    for (let i = 0; i < banks.length; i++) {
+      bankStatus.push(failedBanks.includes(banks[i]) ? 'Failed' : 'Good');
+    }
+    setbankStatus(bankStatus)
+    console.log("bankStatus",bankStatus)
+  };
+
   // Register a new bank
   const registerBank = async () => {
     if (!newBankAddress) {
@@ -206,7 +220,7 @@ const RegulatorPanel = () => {
   };
 
   // Mark a bank as failed
-  const failBank = async () => {
+  const failBank = async (bankToFail) => {
     if (!bankToFail) {
       notify("Please enter a valid bank address.");
       return;
@@ -228,28 +242,88 @@ const RegulatorPanel = () => {
     }
   };
 
+    // Mark a bank as failed
+    const unfailBank = async (bankToUnFail) => {
+      if (!bankToUnFail) {
+        notify("Please enter a valid bank address.");
+        return;
+      }
+  
+      try {
+        setIsLoading(true);
+        setActiveStep(1);
+        const tx = await contract.unfailBank(bankToUnFail);
+        await tx.wait();
+        notify(`Bank ${bankToUnFail} marked as Good.`);
+        setBankToUnFail(""); // Reset the input field
+        setIsLoading(false);
+        fetchFailedBanks(); // Refresh failed bank list
+      } catch (error) {
+        setIsLoading(false);
+        console.error("Error unfailing bank:", error);
+        notify("UnFailing bank failed.");
+      }
+    };
+
   return (
     <Box p={4}>
       <Paper elevation={3} sx={{ padding: 4 }}>
         {/* Page Header */}
         <Typography variant="h4" gutterBottom>
-          Regulator Panel
+          Regulator Control Panel
         </Typography>
 
         {/* Contract Creator and Insurance Pool Balance */}
         <Box mb={4}>
           <Typography variant="body1" gutterBottom>
-            Contract Creator (Regulator): {creator || "Not available"}
+            Regulator Address: {creator || "Not available"}
           </Typography>
           <Typography variant="body1" gutterBottom>
             Insurance Pool Balance: {insurancePoolBalance} ETH
           </Typography>
         </Box>
 
+        <Box mb={4} display="flex" alignItems="center" justifyContent="center">
+          {regulators && regulators.length > 0 ? (
+            <FormControl variant="outlined" fullWidth>
+              <InputLabel id="regulator-label">All Current Regulators</InputLabel>
+              <Select
+                labelId="regulator-label"
+                value={regulators[0] || ''}
+                label="Other Current Regulators"
+                // disabled
+                sx={{
+                  backgroundColor: '#f5f5f5',
+                  borderRadius: '8px',
+                }}
+              >
+                {regulators.map((regulator) => (
+                  <MenuItem key={regulator} value={regulator}>
+                    {regulator}
+                  </MenuItem>
+                ))}
+              </Select>
+            </FormControl>
+          ) : (
+            <Typography variant="h6" color="textSecondary">
+              No regulators found.
+            </Typography>
+          )}
+        </Box>
+
+        <BankStatusGrid
+          banks={banks}
+          failedBanks={failedBanks}
+          isCorrectWallet={isCorrectWallet}
+          failBank={failBank}
+          unfailBank={unfailBank}
+        />
+
+
         {/* Register Bank Section */}
         <Box mb={4}>
           <Typography variant="h5" gutterBottom>
-            Register a Bank
+            Register a New Bank Address
           </Typography>
           <Grid2 container spacing={2}>
             <Grid2 xs={12} md={8}>
@@ -275,7 +349,7 @@ const RegulatorPanel = () => {
           </Grid2>
         </Box>
 
-        {/* Fail Bank Section */}
+        {/* Fail Bank Section
         <Box mb={4}>
           <Typography variant="h5" gutterBottom>
             Mark Bank as Failed
@@ -302,7 +376,7 @@ const RegulatorPanel = () => {
               </Button>
             </Grid2>
           </Grid2>
-        </Box>
+        </Box> */}
 
         {/* Add Regulator Section */}
         <Box mb={4}>
@@ -333,59 +407,9 @@ const RegulatorPanel = () => {
           </Grid2>
         </Box>
 
-        {/* Display All Banks */}
-        <Box mb={4}>
-          <Typography variant="h5" gutterBottom>
-            Registered Banks
-          </Typography>
-          {banks.length === 0 ? (
-            <Typography>No banks registered.</Typography>
-          ) : (
-            <List>
-              {banks.map((bank) => (
-                <ListItem key={bank}>
-                  <ListItemText primary={bank} />
-                </ListItem>
-              ))}
-            </List>
-          )}
-        </Box>
 
-        {/* Display Failed Banks */}
-        <Box mb={4}>
-          <Typography variant="h5" gutterBottom>
-            Failed Banks
-          </Typography>
-          {failedBanks.length === 0 ? (
-            <Typography>No failed banks.</Typography>
-          ) : (
-            <List>
-              {failedBanks.map((bank) => (
-                <ListItem key={bank}>
-                  <ListItemText primary={bank} />
-                </ListItem>
-              ))}
-            </List>
-          )}
-        </Box>
 
-        {/* Display Regulators */}
-        <Box mb={4}>
-          <Typography variant="h5" gutterBottom>
-            Current Regulators
-          </Typography>
-          {regulators.length === 0 ? (
-            <Typography>No regulators found.</Typography>
-          ) : (
-            <List>
-              {regulators.map((regulator) => (
-                <ListItem key={regulator}>
-                  <ListItemText primary={regulator} />
-                </ListItem>
-              ))}
-            </List>
-          )}
-        </Box>
+
 
         {/* Loading Overlay */}
         <LoadingOverlay
