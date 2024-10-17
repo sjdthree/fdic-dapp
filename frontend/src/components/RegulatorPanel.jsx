@@ -13,7 +13,10 @@ import {
   InputLabel,
   Select,
   MenuItem,
+  Popover,
+  IconButton,
 } from "@mui/material";
+import HelpOutlineIcon from "@mui/icons-material/HelpOutline"; // Icon for help
 import { useLoading } from "../LoadingContext";
 import { notify } from "./ToastNotifications";
 import LoadingOverlay from "./LoadingOverlay";
@@ -41,6 +44,12 @@ const RegulatorPanel = () => {
   const [failedBanks, setFailedBanks] = useState([]); // State for failed banks
   const [regulators, setRegulators] = useState([]); // State for regulators
   const [bankStatus, setbankStatus] = useState([]);
+
+  // State for Popovers
+  const [anchorEl, setAnchorEl] = useState(null);
+  const [popoverContent, setPopoverContent] = useState("");
+
+  const open = Boolean(anchorEl);
 
   // Check if the connected account is the correct regulator wallet
   useEffect(() => {
@@ -162,10 +171,10 @@ const RegulatorPanel = () => {
   const getBankStatus = () => {
     const bankStatus = [];
     for (let i = 0; i < banks.length; i++) {
-      bankStatus.push(failedBanks.includes(banks[i]) ? 'Failed' : 'Good');
+      bankStatus.push(failedBanks.includes(banks[i]) ? "Failed" : "Good");
     }
-    setbankStatus(bankStatus)
-    console.log("bankStatus",bankStatus)
+    setbankStatus(bankStatus);
+    console.log("bankStatus", bankStatus);
   };
 
   // Register a new bank
@@ -242,28 +251,40 @@ const RegulatorPanel = () => {
     }
   };
 
-    // Mark a bank as failed
-    const unfailBank = async (bankToUnFail) => {
-      if (!bankToUnFail) {
-        notify("Please enter a valid bank address.");
-        return;
-      }
-  
-      try {
-        setIsLoading(true);
-        setActiveStep(1);
-        const tx = await contract.unfailBank(bankToUnFail);
-        await tx.wait();
-        notify(`Bank ${bankToUnFail} marked as Good.`);
-        setBankToUnFail(""); // Reset the input field
-        setIsLoading(false);
-        fetchFailedBanks(); // Refresh failed bank list
-      } catch (error) {
-        setIsLoading(false);
-        console.error("Error unfailing bank:", error);
-        notify("UnFailing bank failed.");
-      }
-    };
+  // Mark a bank as failed
+  const unfailBank = async (bankToUnFail) => {
+    if (!bankToUnFail) {
+      notify("Please enter a valid bank address.");
+      return;
+    }
+
+    try {
+      setIsLoading(true);
+      setActiveStep(1);
+      const tx = await contract.unfailBank(bankToUnFail);
+      await tx.wait();
+      notify(`Bank ${bankToUnFail} marked as Good.`);
+      setBankToUnFail(""); // Reset the input field
+      setIsLoading(false);
+      fetchFailedBanks(); // Refresh failed bank list
+    } catch (error) {
+      setIsLoading(false);
+      console.error("Error unfailing bank:", error);
+      notify("UnFailing bank failed.");
+    }
+  };
+
+  // Function to open the popover
+  const handlePopoverOpen = (event, content) => {
+    setAnchorEl(event.currentTarget);
+    setPopoverContent(content);
+  };
+
+  // Function to close the popover
+  const handlePopoverClose = () => {
+    setAnchorEl(null);
+    setPopoverContent("");
+  };
 
   return (
     <Box p={4}>
@@ -271,30 +292,62 @@ const RegulatorPanel = () => {
         {/* Page Header */}
         <Typography variant="h4" gutterBottom>
           Regulator Control Panel
+          <IconButton
+            onClick={(e) =>
+              handlePopoverOpen(
+                e,
+                "This is an overview of all the registered banks and their real-time status."
+              )
+            }
+          >
+            <HelpOutlineIcon fontSize="small" />
+          </IconButton>
         </Typography>
 
         {/* Contract Creator and Insurance Pool Balance */}
         <Box mb={4}>
           <Typography variant="body1" gutterBottom>
             Regulator Address: {creator || "Not available"}
+            <IconButton
+              onClick={(e) =>
+                handlePopoverOpen(
+                  e,
+                  "This is the address of the main regulator who established this system. Reach out to them for any access questions"
+                )
+              }
+            >
+              <HelpOutlineIcon fontSize="small" />
+            </IconButton>
           </Typography>
           <Typography variant="body1" gutterBottom>
-            Insurance Pool Balance: {insurancePoolBalance} ETH
+            Insurance Pool Balance: {insurancePoolBalance} USDC
+            <IconButton
+              onClick={(e) =>
+                handlePopoverOpen(
+                  e,
+                  "This is the current balance of the insurance pool."
+                )
+              }
+            >
+              <HelpOutlineIcon fontSize="small" />
+            </IconButton>
           </Typography>
         </Box>
 
         <Box mb={4} display="flex" alignItems="center" justifyContent="center">
           {regulators && regulators.length > 0 ? (
             <FormControl variant="outlined" fullWidth>
-              <InputLabel id="regulator-label">All Current Regulators</InputLabel>
+              <InputLabel id="regulator-label">
+                All Current Regulators
+              </InputLabel>
               <Select
                 labelId="regulator-label"
-                value={regulators[0] || ''}
+                value={regulators[0] || ""}
                 label="Other Current Regulators"
                 // disabled
                 sx={{
-                  backgroundColor: '#f5f5f5',
-                  borderRadius: '8px',
+                  backgroundColor: "#f5f5f5",
+                  borderRadius: "8px",
                 }}
               >
                 {regulators.map((regulator) => (
@@ -319,11 +372,20 @@ const RegulatorPanel = () => {
           unfailBank={unfailBank}
         />
 
-
         {/* Register Bank Section */}
         <Box mb={4}>
           <Typography variant="h5" gutterBottom>
             Register a New Bank Address
+            <IconButton
+              onClick={(e) =>
+                handlePopoverOpen(
+                  e,
+                  "Register a new bank with the given address."
+                )
+              }
+            >
+              <HelpOutlineIcon fontSize="small" />
+            </IconButton>
           </Typography>
           <Grid2 container spacing={2}>
             <Grid2 xs={12} md={8}>
@@ -382,6 +444,16 @@ const RegulatorPanel = () => {
         <Box mb={4}>
           <Typography variant="h5" gutterBottom>
             Add New Regulator
+            <IconButton
+              onClick={(e) =>
+                handlePopoverOpen(
+                  e,
+                  "Add a new regulator using their wallet address."
+                )
+              }
+            >
+              <HelpOutlineIcon fontSize="small" />
+            </IconButton>
           </Typography>
           <Grid2 container spacing={2}>
             <Grid2 xs={12} md={8}>
@@ -407,9 +479,16 @@ const RegulatorPanel = () => {
           </Grid2>
         </Box>
 
-
-
-
+        {/* Popover for Help */}
+        <Popover
+          open={open}
+          anchorEl={anchorEl}
+          onClose={handlePopoverClose}
+          anchorOrigin={{ vertical: "bottom", horizontal: "left" }}
+          transformOrigin={{ vertical: "top", horizontal: "right" }}
+        >
+          <Typography sx={{ p: 2 }}>{popoverContent}</Typography>
+        </Popover>
 
         {/* Loading Overlay */}
         <LoadingOverlay
