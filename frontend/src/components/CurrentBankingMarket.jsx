@@ -20,6 +20,7 @@ import {
   TableContainer,
 } from "@mui/material";
 import ERC20FDIC from "../abis/ERC20FDIC.json"; // Your contract ABI
+import USDCERC20 from "../abis/USDCERC20.json"; // Your contract ABI
 import { toast } from "react-toastify";
 import BankStatusGrid from "./BankStatusGrid"; // Import the BankStatusGrid component
 
@@ -49,7 +50,7 @@ const CurrentBankingMarket = () => {
       const signer = await provider.getSigner();
       const tokenContract = new ethers.Contract(
         tokenAddress,
-        ERC20FDIC.abi,
+        USDCERC20.abi,
         signer
       );
       const tokenSymbol = await tokenContract.symbol(); // Fetch token symbol via ERC20 standard `symbol` function

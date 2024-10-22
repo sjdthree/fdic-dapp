@@ -2,6 +2,7 @@ import React, { useState, useContext, useEffect } from "react";
 import { BlockchainContext } from "../BlockchainProvider";
 import { ethers } from "ethers";
 import ERC20FDIC from "../abis/ERC20FDIC.json";
+import USDCERC20 from "../abis/USDCERC20.json"; // Your contract ABI
 import {
   TextField,
   Button,
@@ -78,7 +79,7 @@ const RegulatorPanel = () => {
 
           const fdicContract = new ethers.Contract(
             fdicContractAddress,
-            ERC20FDIC.abi,
+            USDCERC20.abi,
             signer
           );
 
