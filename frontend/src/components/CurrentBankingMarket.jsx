@@ -81,7 +81,7 @@ const CurrentBankingMarket = () => {
 
               {/* Insurance Pool Balance */}
               <Typography variant="h5" gutterBottom>
-                Insurance Pool Balance: {insurancePoolBalance} ETH
+                Total Insured Pool Balance: {insurancePoolBalance} USDC
               </Typography>
 
               {/* Banks */}
