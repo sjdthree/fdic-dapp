@@ -2,6 +2,7 @@ import React, { useState, useContext, useEffect } from "react";
 import { BlockchainContext } from "../BlockchainProvider";
 import { ethers } from "ethers";
 import ERC20FDIC from "../abis/ERC20FDIC.json";
+import USDCERC20 from "../abis/USDCERC20.json"; // Your contract ABI
 import {
   TextField,
   Button,
@@ -9,12 +10,12 @@ import {
   Box,
   Grid2,
   Paper,
+  Popover,
+  IconButton,
   FormControl,
   InputLabel,
   Select,
   MenuItem,
-  Popover,
-  IconButton,
 } from "@mui/material";
 import HelpOutlineIcon from "@mui/icons-material/HelpOutline"; // Icon for help
 import { useLoading } from "../LoadingContext";
@@ -44,6 +45,7 @@ const RegulatorPanel = () => {
   const [failedBanks, setFailedBanks] = useState([]); // State for failed banks
   const [regulators, setRegulators] = useState([]); // State for regulators
   const [bankStatus, setbankStatus] = useState([]);
+  const [tokenSymbol, setTokenSymbol] = useState("");
 
   // State for Popovers
   const [anchorEl, setAnchorEl] = useState(null);
@@ -80,7 +82,7 @@ const RegulatorPanel = () => {
             ERC20FDIC.abi,
             signer
           );
-          
+
           setContract(fdicContract);
           console.log("Contract initialized:", fdicContract);
           fetchInitialData(); // Fetch data after initialization
@@ -109,6 +111,7 @@ const RegulatorPanel = () => {
       fetchFailedBanks(),
       fetchRegulators(),
       getBankStatus(),
+      fetchTokenSymbol(defaultTokenAddress),
     ]);
   };
 
@@ -130,6 +133,22 @@ const RegulatorPanel = () => {
       setActiveStep(0);
     } catch (error) {
       console.error("Error fetching insurance pool balance:", error);
+    }
+  };
+
+  const fetchTokenSymbol = async (tokenAddress) => {
+    try {
+      const signer = await provider.getSigner();
+      const tokenContract = new ethers.Contract(
+        tokenAddress,
+        USDCERC20.abi,
+        signer
+      );
+      const tokenSymbol = await tokenContract.symbol(); // Fetch token symbol via ERC20 standard `symbol` function
+      setTokenSymbol(tokenSymbol);
+    } catch (error) {
+      console.error("Error fetching token symbol:", error);
+      setTokenSymbol("Token"); // Fallback in case of error
     }
   };
 
@@ -311,7 +330,7 @@ const RegulatorPanel = () => {
         {/* Contract Creator and Insurance Pool Balance */}
         <Box mb={4}>
           <Typography variant="body1" gutterBottom>
-            Regulator Address: {creator || "Not available"}
+            Main Regulator Address: {creator || "Not available"}
             <IconButton
               onClick={(e) =>
                 handlePopoverOpen(
@@ -323,49 +342,6 @@ const RegulatorPanel = () => {
               <HelpOutlineIcon fontSize="small" />
             </IconButton>
           </Typography>
-          <Typography variant="body1" gutterBottom>
-            Insurance Pool Balance: {insurancePoolBalance} USDC
-            <IconButton
-              onClick={(e) =>
-                handlePopoverOpen(
-                  e,
-                  "This is the current balance of the insurance pool."
-                )
-              }
-            >
-              <HelpOutlineIcon fontSize="small" />
-            </IconButton>
-          </Typography>
-        </Box>
-
-        <Box mb={4} display="flex" alignItems="center" justifyContent="center">
-          {regulators && regulators.length > 0 ? (
-            <FormControl variant="outlined" fullWidth>
-              <InputLabel id="regulator-label">
-                All Current Regulators
-              </InputLabel>
-              <Select
-                labelId="regulator-label"
-                value={regulators[0] || ""}
-                label="Other Current Regulators"
-                // disabled
-                sx={{
-                  backgroundColor: "#f5f5f5",
-                  borderRadius: "8px",
-                }}
-              >
-                {regulators.map((regulator) => (
-                  <MenuItem key={regulator} value={regulator}>
-                    {regulator}
-                  </MenuItem>
-                ))}
-              </Select>
-            </FormControl>
-          ) : (
-            <Typography variant="h6" color="textSecondary">
-              No regulators found.
-            </Typography>
-          )}
         </Box>
 
         <BankStatusGrid
@@ -374,6 +350,8 @@ const RegulatorPanel = () => {
           isCorrectWallet={isCorrectWallet}
           failBank={failBank}
           unfailBank={unfailBank}
+          regulators={regulators}
+          insurancePoolBalance={insurancePoolBalance}
         />
 
         {/* Register Bank Section */}
@@ -414,35 +392,6 @@ const RegulatorPanel = () => {
             </Grid2>
           </Grid2>
         </Box>
-
-        {/* Fail Bank Section
-        <Box mb={4}>
-          <Typography variant="h5" gutterBottom>
-            Mark Bank as Failed
-          </Typography>
-          <Grid2 container spacing={2}>
-            <Grid2 xs={12} md={8}>
-              <TextField
-                label="Enter Bank Address"
-                fullWidth
-                value={bankToFail}
-                onChange={(e) => setBankToFail(e.target.value)}
-                disabled={!isCorrectWallet}
-              />
-            </Grid2>
-            <Grid2 xs={12} md={4}>
-              <Button
-                variant="contained"
-                color="secondary"
-                onClick={failBank}
-                disabled={!isCorrectWallet}
-                fullWidth
-              >
-                Fail Bank
-              </Button>
-            </Grid2>
-          </Grid2>
-        </Box> */}
 
         {/* Add Regulator Section */}
         <Box mb={4}>

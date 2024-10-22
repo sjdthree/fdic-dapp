@@ -1,9 +1,28 @@
-import React, { useState, useEffect, useContext } from 'react';
-import { BlockchainContext } from '../BlockchainProvider';
-import { ethers } from 'ethers';
-import { Button, Modal, Typography, Box, List, ListItem, ListItemText, Divider, Paper, CircularProgress, Table, TableBody, TableCell, TableHead, TableRow, TableContainer } from '@mui/material';
-import ERC20FDIC from '../abis/ERC20FDIC.json'; // Your contract ABI
-import { toast } from 'react-toastify';
+import React, { useState, useEffect, useContext } from "react";
+import { BlockchainContext } from "../BlockchainProvider";
+import { ethers } from "ethers";
+import {
+  Button,
+  Modal,
+  Typography,
+  Box,
+  List,
+  ListItem,
+  ListItemText,
+  Divider,
+  Paper,
+  CircularProgress,
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableRow,
+  TableContainer,
+} from "@mui/material";
+import ERC20FDIC from "../abis/ERC20FDIC.json"; // Your contract ABI
+import USDCERC20 from "../abis/USDCERC20.json"; // Your contract ABI
+import { toast } from "react-toastify";
+import BankStatusGrid from "./BankStatusGrid"; // Import the BankStatusGrid component
 
 const FDICContractAddress = import.meta.env.VITE_FDIC_CONTRACT_ADDRESS;
 const USDCTokenAddress = import.meta.env.VITE_DEFAULT_TOKEN_ADDRESS;
@@ -13,23 +32,45 @@ const CurrentBankingMarket = () => {
   const [banks, setBanks] = useState([]);
   const [failedBanks, setFailedBanks] = useState([]);
   const [regulators, setRegulators] = useState([]);
-  const [insurancePoolBalance, setInsurancePoolBalance] = useState('');
+  const [insurancePoolBalance, setInsurancePoolBalance] = useState("");
+  const [tokenSymbol, setTokenSymbol] = useState("");
   const [isModalOpen, setModalOpen] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
-  
+
   useEffect(() => {
     if (provider) {
       fetchContractData();
     } else {
-      console.log('Provider is not initialized.');
+      console.log("Provider is not initialized.");
     }
   }, [provider]);
-  
+
+  const fetchTokenSymbol = async (tokenAddress) => {
+    try {
+      const signer = await provider.getSigner();
+      const tokenContract = new ethers.Contract(
+        tokenAddress,
+        USDCERC20.abi,
+        signer
+      );
+      const tokenSymbol = await tokenContract.symbol(); // Fetch token symbol via ERC20 standard `symbol` function
+      return tokenSymbol;
+    } catch (error) {
+      console.error("Error fetching token symbol:", error);
+      toast.error("Failed to fetch token symbol");
+      return "Token"; // Fallback in case of error
+    }
+  };
+
   const fetchContractData = async () => {
     setIsLoading(true);
     try {
       const signer = await provider.getSigner();
-      const contract = new ethers.Contract(FDICContractAddress, ERC20FDIC.abi, signer);
+      const contract = new ethers.Contract(
+        FDICContractAddress,
+        ERC20FDIC.abi,
+        signer
+      );
 
       // Fetch banks
       const bankList = await contract.getBanks();
@@ -43,129 +84,83 @@ const CurrentBankingMarket = () => {
       const regulatorList = await contract.getRegulators();
       setRegulators(regulatorList);
 
+      // Fetch token symbol dynamically
+      const symbol = await fetchTokenSymbol(USDCTokenAddress);
+      setTokenSymbol(symbol); // Set token symbol in state
+
       // Fetch insurance pool balance
       const balance = await contract.getInsurancePoolBalance();
       setInsurancePoolBalance(ethers.formatEther(balance));
     } catch (error) {
-      console.error('Error fetching contract data:', error);
-      toast.error('Failed to fetch contract data');
+      console.error("Error fetching contract data:", error);
+      toast.error("Failed to fetch contract data");
     } finally {
       setIsLoading(false);
     }
   };
-  
+
   const handleOpenModal = () => setModalOpen(true);
   const handleCloseModal = () => setModalOpen(false);
 
   return (
     <div>
       <Button onClick={handleOpenModal} variant="outlined">
-        Current Banking Market
+      Current Regulator and Bank Status
       </Button>
       <Modal open={isModalOpen} onClose={handleCloseModal}>
-        <Paper sx={{ width: '80%', margin: 'auto', marginTop: '5%', padding: '20px', maxHeight: '90vh', overflowY: 'auto' }}>
-          <Typography variant="h4" gutterBottom>
-            Current Banking Market
+        <Paper
+          sx={{
+            width: "80%",
+            margin: "auto",
+            marginTop: "5%",
+            padding: "20px",
+            maxHeight: "90vh",
+            overflowY: "auto",
+          }}
+        >
+          <Typography variant="h5" gutterBottom>
+            Regulator and Insurance Pool Status
           </Typography>
           <Divider />
 
           {isLoading ? (
-            <Box display="flex" justifyContent="center" alignItems="center" sx={{ minHeight: '200px' }}>
+            <Box
+              display="flex"
+              justifyContent="center"
+              alignItems="center"
+              sx={{ minHeight: "200px" }}
+            >
               <CircularProgress />
             </Box>
           ) : (
             <>
-              <Typography variant="h6">FDIC Contract Address: {FDICContractAddress}</Typography>
-              <Typography variant="h6">USDC Token Address: {USDCTokenAddress}</Typography>
+              <Typography variant="h6">
+                FDIC Contract Address: {FDICContractAddress}
+              </Typography>
+              <Typography variant="h6">
+                Token Address: {USDCTokenAddress}
+              </Typography>
               <Divider />
 
-              {/* Insurance Pool Balance */}
-              <Typography variant="h5" gutterBottom>
-                Insurance Pool Balance: {insurancePoolBalance} ETH
-              </Typography>
 
-              {/* Banks */}
-              <Typography variant="h6" gutterBottom>
-                Registered Banks
-              </Typography>
-              <TableContainer>
-                <Table>
-                  <TableHead>
-                    <TableRow>
-                      <TableCell>Bank Address</TableCell>
-                    </TableRow>
-                  </TableHead>
-                  <TableBody>
-                    {banks.length > 0 ? (
-                      banks.map((bank, index) => (
-                        <TableRow key={index}>
-                          <TableCell>{bank}</TableCell>
-                        </TableRow>
-                      ))
-                    ) : (
-                      <TableRow>
-                        <TableCell>No registered banks found.</TableCell>
-                      </TableRow>
-                    )}
-                  </TableBody>
-                </Table>
-              </TableContainer>
 
-              <Divider />
-
-              {/* Failed Banks */}
-              <Typography variant="h6" gutterBottom>
-                Failed Banks
-              </Typography>
-              <TableContainer>
-                <Table>
-                  <TableHead>
-                    <TableRow>
-                      <TableCell>Failed Bank Address</TableCell>
-                    </TableRow>
-                  </TableHead>
-                  <TableBody>
-                    {failedBanks.length > 0 ? (
-                      failedBanks.map((bank, index) => (
-                        <TableRow key={index}>
-                          <TableCell>{bank}</TableCell>
-                        </TableRow>
-                      ))
-                    ) : (
-                      <TableRow>
-                        <TableCell>No failed banks currently.</TableCell>
-                      </TableRow>
-                    )}
-                  </TableBody>
-                </Table>
-              </TableContainer>
-
-              <Divider />
-
-              {/* Regulators */}
-              <Typography variant="h6" gutterBottom>
-                Regulators
-              </Typography>
-              <TableContainer>
-                <Table>
-                  <TableHead>
-                    <TableRow>
-                      <TableCell>Regulator Address</TableCell>
-                    </TableRow>
-                  </TableHead>
-                  <TableBody>
-                    {regulators.map((regulator, index) => (
-                      <TableRow key={index}>
-                        <TableCell>{regulator}</TableCell>
-                      </TableRow>
-                    ))}
-                  </TableBody>
-                </Table>
-              </TableContainer>
+              <BankStatusGrid
+                banks={banks}
+                failedBanks={failedBanks}
+                isCorrectWallet={false}
+                insurancePoolBalance={insurancePoolBalance}
+                regulators={regulators}
+                tokenSymbol={tokenSymbol}
+              />
             </>
           )}
 
-          <Button onClick={handleCloseModal} variant="contained" color="primary" sx={{ marginTop: 2 }}>
+          <Button
+            onClick={handleCloseModal}
+            variant="contained"
+            color="primary"
+            sx={{ marginTop: 2 }}
+          >
             Close
           </Button>
         </Paper>
