@@ -44,6 +44,7 @@ const RegulatorPanel = () => {
   const [failedBanks, setFailedBanks] = useState([]); // State for failed banks
   const [regulators, setRegulators] = useState([]); // State for regulators
   const [bankStatus, setbankStatus] = useState([]);
+  const [tokenSymbol, setTokenSymbol] = useState("");
 
   // State for Popovers
   const [anchorEl, setAnchorEl] = useState(null);
@@ -80,7 +81,7 @@ const RegulatorPanel = () => {
             ERC20FDIC.abi,
             signer
           );
-          
+
           setContract(fdicContract);
           console.log("Contract initialized:", fdicContract);
           fetchInitialData(); // Fetch data after initialization
@@ -130,6 +131,22 @@ const RegulatorPanel = () => {
       setActiveStep(0);
     } catch (error) {
       console.error("Error fetching insurance pool balance:", error);
+    }
+  };
+
+  const fetchTokenSymbol = async (tokenAddress) => {
+    try {
+      const signer = await provider.getSigner();
+      const tokenContract = new ethers.Contract(
+        tokenAddress,
+        ERC20FDIC.abi,
+        signer
+      );
+      const tokenSymbol = await tokenContract.symbol(); // Fetch token symbol via ERC20 standard `symbol` function
+      setTokenSymbol(tokenSymbol);
+    } catch (error) {
+      console.error("Error fetching token symbol:", error);
+      setTokenSymbol("Token"); // Fallback in case of error
     }
   };
 
@@ -324,7 +341,7 @@ const RegulatorPanel = () => {
             </IconButton>
           </Typography>
           <Typography variant="body1" gutterBottom>
-            Insurance Pool Balance: {insurancePoolBalance} USDC
+            Insurance Pool Balance: {insurancePoolBalance} {tokenSymbol}
             <IconButton
               onClick={(e) =>
                 handlePopoverOpen(
