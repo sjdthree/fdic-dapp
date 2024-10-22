@@ -79,7 +79,7 @@ const RegulatorPanel = () => {
 
           const fdicContract = new ethers.Contract(
             fdicContractAddress,
-            USDCERC20.abi,
+            ERC20FDIC.abi,
             signer
           );
 
@@ -141,7 +141,7 @@ const RegulatorPanel = () => {
       const signer = await provider.getSigner();
       const tokenContract = new ethers.Contract(
         tokenAddress,
-        ERC20FDIC.abi,
+        USDCERC20.abi,
         signer
       );
       const tokenSymbol = await tokenContract.symbol(); // Fetch token symbol via ERC20 standard `symbol` function
@@ -343,7 +343,6 @@ const RegulatorPanel = () => {
             </IconButton>
           </Typography>
         </Box>
-
 
         <BankStatusGrid
           banks={banks}
