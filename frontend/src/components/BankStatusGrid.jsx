@@ -21,7 +21,7 @@ import {
 import HelpOutlineIcon from "@mui/icons-material/HelpOutline"; // Icon for help
 import { Block, CheckCircle } from '@mui/icons-material';
 
-function BankStatusGrid({ banks, failedBanks, isCorrectWallet, failBank, unfailBank, regulators, insurancePoolBalance }) {
+function BankStatusGrid({ banks, failedBanks, isCorrectWallet, failBank, unfailBank, regulators, insurancePoolBalance, tokenSymbol }) {
   const [bankStatus, setBankStatus] = useState([]);
 
   // State for Popovers
@@ -80,10 +80,10 @@ function BankStatusGrid({ banks, failedBanks, isCorrectWallet, failBank, unfailB
   return (
     <Box mb={4}>
       <Typography variant="h5" gutterBottom>
-        Bank Status Overview
+        Current Banking Status
       </Typography>
       <Typography variant="body1" gutterBottom>
-            Total Insured Pool Balance: {insurancePoolBalance} USDC
+            Total Insured Pool Balance: {insurancePoolBalance} {tokenSymbol}
             <IconButton
               onClick={(e) =>
                 handlePopoverOpen(

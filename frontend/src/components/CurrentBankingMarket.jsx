@@ -105,7 +105,7 @@ const CurrentBankingMarket = () => {
   return (
     <div>
       <Button onClick={handleOpenModal} variant="outlined">
-        Current Banking Market
+      Current Regulator and Bank Status
       </Button>
       <Modal open={isModalOpen} onClose={handleCloseModal}>
         <Paper
@@ -118,8 +118,8 @@ const CurrentBankingMarket = () => {
             overflowY: "auto",
           }}
         >
-          <Typography variant="h4" gutterBottom>
-            Current Banking Market
+          <Typography variant="h5" gutterBottom>
+            Regulator and Insurance Pool Status
           </Typography>
           <Divider />
 
@@ -142,15 +142,15 @@ const CurrentBankingMarket = () => {
               </Typography>
               <Divider />
 
-              {/* Insurance Pool Balance */}
-              <Typography variant="h5" gutterBottom>
-                Total Insured Pool Balance: {insurancePoolBalance} {tokenSymbol}
-              </Typography>
+
 
               <BankStatusGrid
                 banks={banks}
                 failedBanks={failedBanks}
                 isCorrectWallet={false}
+                insurancePoolBalance={insurancePoolBalance}
+                regulators={regulators}
+                tokenSymbol={tokenSymbol}
               />
             </>
           )}
