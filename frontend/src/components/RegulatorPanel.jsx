@@ -9,10 +9,6 @@ import {
   Box,
   Grid2,
   Paper,
-  FormControl,
-  InputLabel,
-  Select,
-  MenuItem,
   Popover,
   IconButton,
 } from "@mui/material";
@@ -328,7 +324,7 @@ const RegulatorPanel = () => {
         {/* Contract Creator and Insurance Pool Balance */}
         <Box mb={4}>
           <Typography variant="body1" gutterBottom>
-            Regulator Address: {creator || "Not available"}
+            Main Regulator Address: {creator || "Not available"}
             <IconButton
               onClick={(e) =>
                 handlePopoverOpen(
@@ -391,6 +387,8 @@ const RegulatorPanel = () => {
           isCorrectWallet={isCorrectWallet}
           failBank={failBank}
           unfailBank={unfailBank}
+          regulators={regulators}
+          insurancePoolBalance={insurancePoolBalance}
         />
 
         {/* Register Bank Section */}
@@ -431,35 +429,6 @@ const RegulatorPanel = () => {
             </Grid2>
           </Grid2>
         </Box>
-
-        {/* Fail Bank Section
-        <Box mb={4}>
-          <Typography variant="h5" gutterBottom>
-            Mark Bank as Failed
-          </Typography>
-          <Grid2 container spacing={2}>
-            <Grid2 xs={12} md={8}>
-              <TextField
-                label="Enter Bank Address"
-                fullWidth
-                value={bankToFail}
-                onChange={(e) => setBankToFail(e.target.value)}
-                disabled={!isCorrectWallet}
-              />
-            </Grid2>
-            <Grid2 xs={12} md={4}>
-              <Button
-                variant="contained"
-                color="secondary"
-                onClick={failBank}
-                disabled={!isCorrectWallet}
-                fullWidth
-              >
-                Fail Bank
-              </Button>
-            </Grid2>
-          </Grid2>
-        </Box> */}
 
         {/* Add Regulator Section */}
         <Box mb={4}>

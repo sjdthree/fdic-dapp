@@ -9,14 +9,26 @@ import {
   TableCell,
   TableContainer,
   TableHead,
+  FormControl,
+  InputLabel,
+  Select,
+  MenuItem,
   TableRow,
   Paper,
+  IconButton,
 } from '@mui/material';
+import HelpOutlineIcon from "@mui/icons-material/HelpOutline"; // Icon for help
 import { Block, CheckCircle } from '@mui/icons-material';
 
-function BankStatusGrid({ banks, failedBanks, isCorrectWallet, failBank, unfailBank }) {
+function BankStatusGrid({ banks, failedBanks, isCorrectWallet, failBank, unfailBank, regulators, insurancePoolBalance }) {
   const [bankStatus, setBankStatus] = useState([]);
 
+  // State for Popovers
+  const [anchorEl, setAnchorEl] = useState(null);
+  const [popoverContent, setPopoverContent] = useState("");
+
+  const open = Boolean(anchorEl);
+  
   useEffect(() => {
     const statuses = banks.map((bank) =>
         failedBanks.includes(bank) ? 'Failed' : 'Good'
@@ -52,11 +64,66 @@ function BankStatusGrid({ banks, failedBanks, isCorrectWallet, failBank, unfailB
     }
   };
 
+    // Function to open the popover
+    const handlePopoverOpen = (event, content) => {
+      setAnchorEl(event.currentTarget);
+      setPopoverContent(content);
+    };
+  
+    // Function to close the popover
+    const handlePopoverClose = () => {
+      setAnchorEl(null);
+      setPopoverContent("");
+    };
+
   return (
     <Box mb={4}>
       <Typography variant="h5" gutterBottom>
         Bank Status Overview
       </Typography>
+      <Typography variant="body1" gutterBottom>
+            Total Insured Pool Balance: {insurancePoolBalance} USDC
+            <IconButton
+              onClick={(e) =>
+                handlePopoverOpen(
+                  e,
+                  "This is the current balance of the insurance pool."
+                )
+              }
+            >
+              <HelpOutlineIcon fontSize="small" />
+            </IconButton>
+          </Typography>
+        All Current Regulators
+        <Box mb={4} display="flex" alignItems="center" justifyContent="center">
+          {regulators && regulators.length > 0 ? (
+            <FormControl variant="outlined" fullWidth>
+              <InputLabel id="regulator-label">
+                All Current Regulators
+              </InputLabel>
+              <Select
+                labelId="regulator-label"
+                value={regulators[0] || ""}
+                label="Other Current Regulators"
+                // disabled
+                sx={{
+                  backgroundColor: "#f5f5f5",
+                  borderRadius: "8px",
+                }}
+              >
+                {regulators.map((regulator) => (
+                  <MenuItem key={regulator} value={regulator}>
+                    {regulator}
+                  </MenuItem>
+                ))}
+              </Select>
+            </FormControl>
+          ) : (
+            <Typography variant="h6" color="textSecondary">
+              No regulators found.
+            </Typography>
+          )}
+        </Box>
       <TableContainer component={Paper} elevation={3}>
         <Table>
           <TableHead>
