@@ -80,6 +80,7 @@ const RegulatorPanel = () => {
             ERC20FDIC.abi,
             signer
           );
+          
           setContract(fdicContract);
           console.log("Contract initialized:", fdicContract);
           fetchInitialData(); // Fetch data after initialization
@@ -101,7 +102,6 @@ const RegulatorPanel = () => {
 
   const fetchInitialData = async () => {
     if (!contract) return;
-
     // Fetch data in parallel
     await Promise.all([
       fetchInsurancePoolBalance(),
@@ -111,6 +111,10 @@ const RegulatorPanel = () => {
       getBankStatus(),
     ]);
   };
+
+  useEffect(() => {
+    fetchInitialData();
+  }, [contract]);
 
   // Fetch the insurance pool balance from the contract
   const fetchInsurancePoolBalance = async () => {
