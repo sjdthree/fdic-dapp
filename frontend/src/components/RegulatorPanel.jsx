@@ -342,50 +342,8 @@ const RegulatorPanel = () => {
               <HelpOutlineIcon fontSize="small" />
             </IconButton>
           </Typography>
-          <Typography variant="body1" gutterBottom>
-            Insurance Pool Balance: {insurancePoolBalance} {tokenSymbol}
-            <IconButton
-              onClick={(e) =>
-                handlePopoverOpen(
-                  e,
-                  "This is the current balance of the insurance pool."
-                )
-              }
-            >
-              <HelpOutlineIcon fontSize="small" />
-            </IconButton>
-          </Typography>
         </Box>
 
-        <Box mb={4} display="flex" alignItems="center" justifyContent="center">
-          {regulators && regulators.length > 0 ? (
-            <FormControl variant="outlined" fullWidth>
-              <InputLabel id="regulator-label">
-                All Current Regulators
-              </InputLabel>
-              <Select
-                labelId="regulator-label"
-                value={regulators[0] || ""}
-                label="Other Current Regulators"
-                // disabled
-                sx={{
-                  backgroundColor: "#f5f5f5",
-                  borderRadius: "8px",
-                }}
-              >
-                {regulators.map((regulator) => (
-                  <MenuItem key={regulator} value={regulator}>
-                    {regulator}
-                  </MenuItem>
-                ))}
-              </Select>
-            </FormControl>
-          ) : (
-            <Typography variant="h6" color="textSecondary">
-              No regulators found.
-            </Typography>
-          )}
-        </Box>
 
         <BankStatusGrid
           banks={banks}
