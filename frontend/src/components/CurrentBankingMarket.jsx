@@ -4,6 +4,7 @@ import { ethers } from 'ethers';
 import { Button, Modal, Typography, Box, List, ListItem, ListItemText, Divider, Paper, CircularProgress, Table, TableBody, TableCell, TableHead, TableRow, TableContainer } from '@mui/material';
 import ERC20FDIC from '../abis/ERC20FDIC.json'; // Your contract ABI
 import { toast } from 'react-toastify';
+import BankStatusGrid from './BankStatusGrid'; // Import the BankStatusGrid component
 
 const FDICContractAddress = import.meta.env.VITE_FDIC_CONTRACT_ADDRESS;
 const USDCTokenAddress = import.meta.env.VITE_DEFAULT_TOKEN_ADDRESS;
@@ -83,85 +84,13 @@ const CurrentBankingMarket = () => {
               <Typography variant="h5" gutterBottom>
                 Total Insured Pool Balance: {insurancePoolBalance} USDC
               </Typography>
-
-              {/* Banks */}
-              <Typography variant="h6" gutterBottom>
-                Registered Banks
-              </Typography>
-              <TableContainer>
-                <Table>
-                  <TableHead>
-                    <TableRow>
-                      <TableCell>Bank Address</TableCell>
-                    </TableRow>
-                  </TableHead>
-                  <TableBody>
-                    {banks.length > 0 ? (
-                      banks.map((bank, index) => (
-                        <TableRow key={index}>
-                          <TableCell>{bank}</TableCell>
-                        </TableRow>
-                      ))
-                    ) : (
-                      <TableRow>
-                        <TableCell>No registered banks found.</TableCell>
-                      </TableRow>
-                    )}
-                  </TableBody>
-                </Table>
-              </TableContainer>
-
-              <Divider />
-
-              {/* Failed Banks */}
-              <Typography variant="h6" gutterBottom>
-                Failed Banks
-              </Typography>
-              <TableContainer>
-                <Table>
-                  <TableHead>
-                    <TableRow>
-                      <TableCell>Failed Bank Address</TableCell>
-                    </TableRow>
-                  </TableHead>
-                  <TableBody>
-                    {failedBanks.length > 0 ? (
-                      failedBanks.map((bank, index) => (
-                        <TableRow key={index}>
-                          <TableCell>{bank}</TableCell>
-                        </TableRow>
-                      ))
-                    ) : (
-                      <TableRow>
-                        <TableCell>No failed banks currently.</TableCell>
-                      </TableRow>
-                    )}
-                  </TableBody>
-                </Table>
-              </TableContainer>
-
-              <Divider />
-
-              {/* Regulators */}
-              <Typography variant="h6" gutterBottom>
-                Regulators
-              </Typography>
-              <TableContainer>
-                <Table>
-                  <TableHead>
-                    <TableRow>
-                      <TableCell>Regulator Address</TableCell>
-                    </TableRow>
-                  </TableHead>
-                  <TableBody>
-                    {regulators.map((regulator, index) => (
-                      <TableRow key={index}>
-                        <TableCell>{regulator}</TableCell>
-                      </TableRow>
-                    ))}
-                  </TableBody>
-                </Table>
-              </TableContainer>
+              
+              <BankStatusGrid
+                banks={banks}
+                failedBanks={failedBanks}
+                isCorrectWallet={false}
+              />
+  
             </>
           )}
 
