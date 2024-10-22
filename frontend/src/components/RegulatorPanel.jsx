@@ -110,7 +110,7 @@ const RegulatorPanel = () => {
       fetchFailedBanks(),
       fetchRegulators(),
       getBankStatus(),
-      fetchTokenSymbol(),
+      fetchTokenSymbol(defaultTokenAddress),
     ]);
   };
 
