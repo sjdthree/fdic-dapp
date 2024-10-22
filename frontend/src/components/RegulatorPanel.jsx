@@ -9,10 +9,6 @@ import {
   Box,
   Grid2,
   Paper,
-  FormControl,
-  InputLabel,
-  Select,
-  MenuItem,
   Popover,
   IconButton,
 } from "@mui/material";
@@ -311,7 +307,7 @@ const RegulatorPanel = () => {
         {/* Contract Creator and Insurance Pool Balance */}
         <Box mb={4}>
           <Typography variant="body1" gutterBottom>
-            Regulator Address: {creator || "Not available"}
+            Main Regulator Address: {creator || "Not available"}
             <IconButton
               onClick={(e) =>
                 handlePopoverOpen(
@@ -323,50 +319,7 @@ const RegulatorPanel = () => {
               <HelpOutlineIcon fontSize="small" />
             </IconButton>
           </Typography>
-          <Typography variant="body1" gutterBottom>
-            Insurance Pool Balance: {insurancePoolBalance} USDC
-            <IconButton
-              onClick={(e) =>
-                handlePopoverOpen(
-                  e,
-                  "This is the current balance of the insurance pool."
-                )
-              }
-            >
-              <HelpOutlineIcon fontSize="small" />
-            </IconButton>
-          </Typography>
-        </Box>
-
-        <Box mb={4} display="flex" alignItems="center" justifyContent="center">
-          {regulators && regulators.length > 0 ? (
-            <FormControl variant="outlined" fullWidth>
-              <InputLabel id="regulator-label">
-                All Current Regulators
-              </InputLabel>
-              <Select
-                labelId="regulator-label"
-                value={regulators[0] || ""}
-                label="Other Current Regulators"
-                // disabled
-                sx={{
-                  backgroundColor: "#f5f5f5",
-                  borderRadius: "8px",
-                }}
-              >
-                {regulators.map((regulator) => (
-                  <MenuItem key={regulator} value={regulator}>
-                    {regulator}
-                  </MenuItem>
-                ))}
-              </Select>
-            </FormControl>
-          ) : (
-            <Typography variant="h6" color="textSecondary">
-              No regulators found.
-            </Typography>
-          )}
-        </Box>
+          </Box>
 
         <BankStatusGrid
           banks={banks}
@@ -374,6 +327,8 @@ const RegulatorPanel = () => {
           isCorrectWallet={isCorrectWallet}
           failBank={failBank}
           unfailBank={unfailBank}
+          regulators={regulators}
+          insurancePoolBalance={insurancePoolBalance}
         />
 
         {/* Register Bank Section */}
@@ -415,34 +370,6 @@ const RegulatorPanel = () => {
           </Grid2>
         </Box>
 
-        {/* Fail Bank Section
-        <Box mb={4}>
-          <Typography variant="h5" gutterBottom>
-            Mark Bank as Failed
-          </Typography>
-          <Grid2 container spacing={2}>
-            <Grid2 xs={12} md={8}>
-              <TextField
-                label="Enter Bank Address"
-                fullWidth
-                value={bankToFail}
-                onChange={(e) => setBankToFail(e.target.value)}
-                disabled={!isCorrectWallet}
-              />
-            </Grid2>
-            <Grid2 xs={12} md={4}>
-              <Button
-                variant="contained"
-                color="secondary"
-                onClick={failBank}
-                disabled={!isCorrectWallet}
-                fullWidth
-              >
-                Fail Bank
-              </Button>
-            </Grid2>
-          </Grid2>
-        </Box> */}
 
         {/* Add Regulator Section */}
         <Box mb={4}>
