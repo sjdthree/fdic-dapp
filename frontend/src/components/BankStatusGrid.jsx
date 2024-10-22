@@ -15,6 +15,7 @@ import {
   MenuItem,
   TableRow,
   Paper,
+  Popover,
   IconButton,
 } from '@mui/material';
 import HelpOutlineIcon from "@mui/icons-material/HelpOutline"; // Icon for help
@@ -75,7 +76,7 @@ function BankStatusGrid({ banks, failedBanks, isCorrectWallet, failBank, unfailB
       setAnchorEl(null);
       setPopoverContent("");
     };
-
+  
   return (
     <Box mb={4}>
       <Typography variant="h5" gutterBottom>
@@ -190,6 +191,17 @@ function BankStatusGrid({ banks, failedBanks, isCorrectWallet, failBank, unfailB
           </TableBody>
         </Table>
       </TableContainer>
+
+        {/* Popover for Help */}
+        <Popover
+          open={open}
+          anchorEl={anchorEl}
+          onClose={handlePopoverClose}
+          anchorOrigin={{ vertical: "bottom", horizontal: "left" }}
+          transformOrigin={{ vertical: "top", horizontal: "right" }}
+        >
+          <Typography sx={{ p: 2 }}>{popoverContent}</Typography>
+        </Popover>
     </Box>
   );
 }
