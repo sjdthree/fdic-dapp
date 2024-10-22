@@ -100,6 +100,7 @@ const RegulatorPanel = () => {
   }, [provider, account]);
 
   const fetchInitialData = async () => {
+    console.log("inside fetchInitialData", contract);
     if (!contract) return;
     console.log("Fetching initial data...");
     // Fetch data in parallel
