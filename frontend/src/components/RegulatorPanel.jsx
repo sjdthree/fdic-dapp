@@ -11,6 +11,10 @@ import {
   Paper,
   Popover,
   IconButton,
+  FormControl,
+  InputLabel,
+  Select,
+  MenuItem,
 } from "@mui/material";
 import HelpOutlineIcon from "@mui/icons-material/HelpOutline"; // Icon for help
 import { useLoading } from "../LoadingContext";
@@ -106,6 +110,7 @@ const RegulatorPanel = () => {
       fetchFailedBanks(),
       fetchRegulators(),
       getBankStatus(),
+      fetchTokenSymbol(),
     ]);
   };
 
