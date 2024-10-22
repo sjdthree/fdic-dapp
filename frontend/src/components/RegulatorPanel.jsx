@@ -101,7 +101,7 @@ const RegulatorPanel = () => {
 
   const fetchInitialData = async () => {
     if (!contract) return;
-
+    console.log("Fetching initial data...");
     // Fetch data in parallel
     await Promise.all([
       fetchInsurancePoolBalance(),
@@ -110,6 +110,7 @@ const RegulatorPanel = () => {
       fetchRegulators(),
       getBankStatus(),
     ]);
+    console.log("Data fetched successfully.");
   };
 
   // Fetch the insurance pool balance from the contract
