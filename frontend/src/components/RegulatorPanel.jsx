@@ -127,8 +127,9 @@ const RegulatorPanel = () => {
       setIsLoading(true);
       setActiveStep(1);
       const balance = await contract.getInsurancePoolBalance();
-      console.log("Insurance pool balance:", balance.toString());
-      setInsurancePoolBalance(ethers.formatEther(balance));
+      // Format and round to 2 decimal places
+      const formattedBalance = parseFloat(ethers.formatEther(balance)).toFixed(2);
+      setInsurancePoolBalance(formattedBalance);
       setIsLoading(false);
       setActiveStep(0);
     } catch (error) {
@@ -352,6 +353,7 @@ const RegulatorPanel = () => {
           unfailBank={unfailBank}
           regulators={regulators}
           insurancePoolBalance={insurancePoolBalance}
+          tokenSymbol={tokenSymbol}
         />
 
         {/* Register Bank Section */}

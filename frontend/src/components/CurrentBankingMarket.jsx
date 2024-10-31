@@ -90,7 +90,9 @@ const CurrentBankingMarket = () => {
 
       // Fetch insurance pool balance
       const balance = await contract.getInsurancePoolBalance();
-      setInsurancePoolBalance(ethers.formatEther(balance));
+      // Format and round to 2 decimal places
+      const formattedBalance = parseFloat(ethers.formatEther(balance)).toFixed(2);
+      setInsurancePoolBalance(formattedBalance);
     } catch (error) {
       console.error("Error fetching contract data:", error);
       toast.error("Failed to fetch contract data");
