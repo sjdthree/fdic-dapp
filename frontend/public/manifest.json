@@ -1,6 +1,7 @@
 {
-  "short_name": "React App",
-  "name": "Create React App Sample",
+  "short_name": "FDIC-Insurance DAPP",
+  "name": "OnChain FDIC Insurance DAPP",
+  "iconPath": "insurance.png",
   "icons": [
     {
       "src": "favicon.ico",
