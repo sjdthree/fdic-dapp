@@ -13,7 +13,7 @@ const provider = new HDWalletProvider({
 
 module.exports = {
   networks: {
-    amoy: {
+    sepolia: {
       provider: () => provider,
       network_id: "11155111", // Sepolia network ID
       gas: 20000000,

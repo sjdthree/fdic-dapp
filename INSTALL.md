@@ -153,11 +153,11 @@ Open `http://localhost:5174` in your browser.
 
 To interact with the deployed contract on **Polygon Amoy Testnet**:
 
-- **Network Name:** Polygon Amoy Testnet
-- **RPC URL:** `https://rpc.ankr.com/polygon_amoy`
-- **Chain ID:** `80001`
-- **Currency Symbol:** MATIC
-- **Block Explorer URL:** `https://amoy.polygonscan.com/`
+- **Network Name:** Sepolia Testnet
+- **RPC URL:** `https://sepolia.infura.io/v3/YOUR_INFURA_PROJECT_ID`
+- **Chain ID:** `11155111`
+- **Currency Symbol:** ETH
+- **Block Explorer URL:** `https://sepolia.etherscan.io/`
 
 ---
 

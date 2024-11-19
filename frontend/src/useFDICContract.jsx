@@ -16,6 +16,7 @@ export const useFDICContract = () => {
     Ethereum: '0xYourEthereumContractAddress', // Replace with your contract address on Ethereum
     Polygon: '0xYourPolygonContractAddress',   // Replace with your contract address on Polygon
     PolygonAmoy: fdicContractAddress,
+    Sepolia: fdicContractAddress,
     Ganache: '0x596a58959872f44d4ad96CAa9443BB7217ba73A1',   // Replace with your Ganache contract address
     // Add more as needed
     }),
@@ -27,7 +28,7 @@ export const useFDICContract = () => {
       if (provider) {
         try {
           const signer = await provider.getSigner();
-          const activeChain = selectedChain || 'PolygonAmoy';
+          const activeChain = selectedChain || 'Sepolia';
           const contractAddress = contractAddresses[activeChain];
 
           if (!contractAddress) {
