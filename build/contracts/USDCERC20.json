@@ -19404,10 +19404,16 @@
       "links": {},
       "address": "0x2ba7c6B463Dd6800C156370e03444C7ec5950776",
       "transactionHash": "0xa8382d8f1f4b2cef0ba6ef5f9d72ed8efbde9ff851fd121ab99eeef41c93d93f"
+    },
+    "11155111": {
+      "events": {},
+      "links": {},
+      "address": "0x5b10e6f5ba095AaFcc486bF9215e822DFa609b8E",
+      "transactionHash": "0x912eea8cf500ed72d849dad49261597834460fdac73a9e06ae205f45f29cbf19"
     }
   },
   "schemaVersion": "3.4.16",
-  "updatedAt": "2024-09-27T21:55:24.037Z",
+  "updatedAt": "2024-11-19T15:26:37.044Z",
   "networkType": "ethereum",
   "devdoc": {
     "details": "Very simple ERC20 Token example, where all tokens are pre-assigned to the creator. Note they can later distribute these tokens as they wish using `transfer` and other `ERC20` functions.",

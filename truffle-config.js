@@ -1,4 +1,4 @@
-require('dotenv').config();
+require("dotenv").config();
 const HDWalletProvider = require("@truffle/hdwallet-provider");
 const Web3 = require("web3");
 
@@ -16,8 +16,8 @@ module.exports = {
     sepolia: {
       provider: () => provider,
       network_id: "11155111", // Sepolia network ID
-      gas: 20000000,
-      gasPrice: Web3.utils.toWei("35", "gwei"),
+      gas: 5000000,
+      gasPrice: 30000000000,
     },
   },
   compilers: {
