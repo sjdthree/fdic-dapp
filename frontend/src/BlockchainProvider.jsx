@@ -13,13 +13,20 @@ const infuraID = import.meta.env.VITE_INFURA_PROJECT_ID;
 
 const chainConfig = {
   chainNamespace: CHAIN_NAMESPACES.EIP155,
-  chainId: "0x13882", // hex of 80002, polygon testnet
-  rpcTarget: `https://polygon-amoy.infura.io/v3/${infuraID}`,
-  displayName: "Polygon Amoy Testnet",
-  blockExplorerUrl: "https://amoy.polygonscan.com/",
-  ticker: "MATIC",
-  tickerName: "MATIC",
-  logo: "https://cryptologos.cc/logos/polygon-matic-logo.png",
+  chainId: "0xaa36a7", // Sepolia Testnet Chain ID
+  rpcTarget: `https://sepolia.infura.io/v3/${infuraID}`,
+  displayName: "Sepolia Testnet",
+  blockExplorerUrl: "https://sepolia.etherscan.io",
+  ticker: "ETH",
+  tickerName: "Ethereum",
+  logo: "https://cryptologos.cc/logos/ethereum-eth-logo.png",
+  // chainId: "0x13882", // hex of 80002, polygon testnet
+  // rpcTarget: `https://polygon-amoy.infura.io/v3/${infuraID}`,
+  // displayName: "Polygon Amoy Testnet",
+  // blockExplorerUrl: "https://amoy.polygonscan.com/",
+  // ticker: "MATIC",
+  // tickerName: "MATIC",
+  // logo: "https://cryptologos.cc/logos/polygon-matic-logo.png",
 };
 
 export const BlockchainProvider = ({ children }) => {
