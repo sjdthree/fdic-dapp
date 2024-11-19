@@ -14,7 +14,7 @@ import { useTheme } from '@mui/material/styles';
 import CurrentBankingMarket from './components/CurrentBankingMarket';
 
 const NavBar = () => {
-  const defaultNetwork = "PolygonAmoy";
+  const defaultNetwork = "Sepolia";
   const { account, loggedIn, login, logout, selectedChain } = useContext(BlockchainContext);
   const [anchorEl, setAnchorEl] = useState(null);
   const [networkEl, setNetworkEl] = useState(null);

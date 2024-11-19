@@ -15,15 +15,15 @@ export const chainConfig = {
     ticker: "ETH",
     tickerName: "Ethereum",
   },
-  // EthereumGoerli: {
-  //   chainNamespace: "eip155",
-  //   chainId: "0x5", // Goerli Testnet
-  //   rpcTarget: `https://goerli.infura.io/v3/${infuraID}`, // Infura RPC
-  //   displayName: "Goerli Testnet",
-  //   blockExplorerUrl: "https://goerli.etherscan.io",
-  //   ticker: "ETH",
-  //   tickerName: "Ethereum",
-  // },
+  Sepolia: {
+    chainNamespace: "eip155",
+    chainId: "0xaa36a7", // Sepolia Testnet Chain ID
+    rpcTarget: `https://sepolia.infura.io/v3/${infuraID}`, 
+    displayName: "Sepolia Testnet",
+    blockExplorerUrl: "https://sepolia.etherscan.io",
+    ticker: "ETH",
+    tickerName: "Ethereum",
+  },
   PolygonZKevm_test: {
     chainNamespace: "eip155",
     chainId: "0x5a2", // Polygon zkEVM Testnet Chain ID

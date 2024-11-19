@@ -75,7 +75,7 @@ const WalletInfo = () => {
             </Tooltip>
           </Box>
           <Typography variant="body1" component="div" sx={{ marginTop: 1 }}>
-            <strong>Balance:</strong> {balance} POL
+            <strong>Balance:</strong> {balance} ETH
           </Typography>
           <Typography variant="body1" component="div" sx={{ marginTop: 1 }}>
             <strong>Balance:</strong> {tokenBalance} USDC

@@ -96,7 +96,7 @@ npx truffle compile
 npx truffle migrate --network development
 ```
 
-### 2. Deploy to Polygon Amoy Testnet
+### 2. Deploy to Sepolia Testnet
 
 #### a. Set Up Environment Variables
 
@@ -112,7 +112,7 @@ Ensure you replace `your_mnemonic_here` with the mnemonic of your MetaMask walle
 
 ```bash
 npx truffle compile
-npx truffle migrate --network polygon_amoy
+npx truffle migrate --network sepolia
 ```
 
 Once deployed, copy the contract address.
@@ -125,7 +125,8 @@ Copy the compiled contract's ABI to the frontend:
 
 ```bash
 mkdir -p frontend/src/abis
-cp build/contracts/OnChainFDIC.json frontend/src/abis/
+cp build/contracts/ERC20FDIC.json frontend/src/abis/
+cp build/contracts/USDCERC20.json frontend/src/abis/
 ```
 
 #### b. Update Contract Address in Frontend
@@ -153,11 +154,11 @@ Open `http://localhost:5174` in your browser.
 
 To interact with the deployed contract on **Polygon Amoy Testnet**:
 
-- **Network Name:** Polygon Amoy Testnet
-- **RPC URL:** `https://rpc.ankr.com/polygon_amoy`
-- **Chain ID:** `80001`
-- **Currency Symbol:** MATIC
-- **Block Explorer URL:** `https://amoy.polygonscan.com/`
+- **Network Name:** Sepolia Testnet
+- **RPC URL:** `https://sepolia.infura.io/v3/YOUR_INFURA_PROJECT_ID`
+- **Chain ID:** `11155111`
+- **Currency Symbol:** ETH
+- **Block Explorer URL:** `https://sepolia.etherscan.io/`
 
 ---
 
