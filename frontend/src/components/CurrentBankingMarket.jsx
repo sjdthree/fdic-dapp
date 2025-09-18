@@ -1,34 +1,29 @@
-import React, { useState, useEffect, useContext } from "react";
-import { BlockchainContext } from "../BlockchainProvider";
+import React, { useState, useEffect } from "react";
 import { ethers } from "ethers";
 import {
   Button,
   Modal,
   Typography,
   Box,
-  List,
-  ListItem,
-  ListItemText,
   Divider,
   Paper,
   CircularProgress,
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableRow,
-  TableContainer,
 } from "@mui/material";
-import ERC20FDIC from "../abis/ERC20FDIC.json"; // Your contract ABI
-import USDCERC20 from "../abis/USDCERC20.json"; // Your contract ABI
+import ERC20FDIC from "../abis/ERC20FDIC.json";
+import USDCERC20 from "../abis/USDCERC20.json";
 import { toast } from "react-toastify";
-import BankStatusGrid from "./BankStatusGrid"; // Import the BankStatusGrid component
+import BankStatusGrid from "./BankStatusGrid";
+import { useDynamicContext, useIsLoggedIn } from '@dynamic-labs/sdk-react-core';
 
 const FDICContractAddress = import.meta.env.VITE_FDIC_CONTRACT_ADDRESS;
 const USDCTokenAddress = import.meta.env.VITE_DEFAULT_TOKEN_ADDRESS;
 
+const SEPOLIA_CHAIN_ID = 11155111;
+
 const CurrentBankingMarket = () => {
-  const { provider } = useContext(BlockchainContext);
+  const { primaryWallet } = useDynamicContext();
+  const isLoggedIn = useIsLoggedIn();
+
   const [banks, setBanks] = useState([]);
   const [failedBanks, setFailedBanks] = useState([]);
   const [regulators, setRegulators] = useState([]);
@@ -38,59 +33,53 @@ const CurrentBankingMarket = () => {
   const [isLoading, setIsLoading] = useState(false);
 
   useEffect(() => {
-    if (provider) {
+    if (primaryWallet && isLoggedIn) {
       fetchContractData();
     } else {
-      console.log("Provider is not initialized.");
+      console.log("Wallet is not connected.");
     }
-  }, [provider]);
+  }, [primaryWallet, isLoggedIn]);
+
+  const getContractWithSigner = async (address, abi) => {
+    if (!primaryWallet) {
+      throw new Error("No wallet connected");
+    }
+    const signer = await primaryWallet.getSigner;
+    return new ethers.Contract(address, abi, signer);
+  };
 
   const fetchTokenSymbol = async (tokenAddress) => {
     try {
-      const signer = await provider.getSigner();
-      const tokenContract = new ethers.Contract(
-        tokenAddress,
-        USDCERC20.abi,
-        signer
-      );
-      const tokenSymbol = await tokenContract.symbol(); // Fetch token symbol via ERC20 standard `symbol` function
-      return tokenSymbol;
+      const tokenContract = await getContractWithSigner(tokenAddress, USDCERC20.abi);
+      const symbol = await tokenContract.symbol();
+      return symbol;
     } catch (error) {
       console.error("Error fetching token symbol:", error);
       toast.error("Failed to fetch token symbol");
-      return "Token"; // Fallback in case of error
+      return "Token";
     }
   };
 
   const fetchContractData = async () => {
     setIsLoading(true);
     try {
-      const signer = await provider.getSigner();
-      const contract = new ethers.Contract(
-        FDICContractAddress,
-        ERC20FDIC.abi,
-        signer
-      );
+      const contract = await getContractWithSigner(FDICContractAddress, ERC20FDIC.abi);
 
-      // Fetch banks
-      const bankList = await contract.getBanks();
+      // Fetch all data in parallel
+      const [bankList, failedBankList, regulatorList, balance, symbol] = await Promise.all([
+        contract.getBanks(),
+        contract.getFailedBanks(),
+        contract.getRegulators(),
+        contract.getInsurancePoolBalance(),
+        fetchTokenSymbol(USDCTokenAddress)
+      ]);
+
       setBanks(bankList);
-
-      // Fetch failed banks
-      const failedBankList = await contract.getFailedBanks();
       setFailedBanks(failedBankList);
-
-      // Fetch regulators
-      const regulatorList = await contract.getRegulators();
       setRegulators(regulatorList);
+      setTokenSymbol(symbol);
 
-      // Fetch token symbol dynamically
-      const symbol = await fetchTokenSymbol(USDCTokenAddress);
-      setTokenSymbol(symbol); // Set token symbol in state
-
-      // Fetch insurance pool balance
-      const balance = await contract.getInsurancePoolBalance();
-      // Format and round to 2 decimal places
+      // Format and round balance to 2 decimal places
       const formattedBalance = parseFloat(ethers.formatEther(balance)).toFixed(2);
       setInsurancePoolBalance(formattedBalance);
     } catch (error) {
@@ -104,10 +93,14 @@ const CurrentBankingMarket = () => {
   const handleOpenModal = () => setModalOpen(true);
   const handleCloseModal = () => setModalOpen(false);
 
+  if (!primaryWallet || !isLoggedIn) {
+    return null;
+  }
+
   return (
     <div>
       <Button onClick={handleOpenModal} variant="outlined">
-      Current Regulator and Bank Status
+        Current Regulator and Bank Status
       </Button>
       <Modal open={isModalOpen} onClose={handleCloseModal}>
         <Paper
@@ -143,8 +136,6 @@ const CurrentBankingMarket = () => {
                 Token Address: {USDCTokenAddress}
               </Typography>
               <Divider />
-
-
 
               <BankStatusGrid
                 banks={banks}

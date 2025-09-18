@@ -8,10 +8,58 @@
   margin-right: 5px;
 }
 
+/* Loading Container */
+.loading-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  height: 100vh;
+  background-color: rgba(255, 255, 255, 0.9);
+}
+
+.loading-container p {
+  margin-top: 20px;
+  color: #1a237e;
+  font-size: 16px;
+  font-weight: 500;
+}
+
+/* Error Container */
+.error-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  height: 100vh;
+  background-color: #fff;
+  padding: 20px;
+  text-align: center;
+}
+
+.error-container h2 {
+  color: #d32f2f;
+  margin-bottom: 20px;
+}
+
+.error-container button {
+  padding: 10px 20px;
+  font-size: 16px;
+  background-color: #1a237e;
+  color: white;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  transition: background-color 0.3s ease;
+}
+
+.error-container button:hover {
+  background-color: #0d47a1;
+}
+
 /* General Styles */
 .app-container {
   font-family: Arial, sans-serif;
-  /* max-width: 1200px; */
   margin: 0 auto;
   padding: 20px;
   box-sizing: border-box;
@@ -78,6 +126,11 @@ button:hover {
   background-color: #0056b3;
 }
 
+button:disabled {
+  background-color: #cccccc;
+  cursor: not-allowed;
+}
+
 /* Wallet Info Styling */
 .wallet-info {
   padding: 15px;
@@ -110,7 +163,28 @@ button:hover {
   border: 1px solid #ddd;
 }
 
-/* Responsive */
+/* Error Messages */
+.error-message {
+  color: #d32f2f;
+  font-weight: bold;
+  margin-top: 10px;
+  background-color: #ffebee;
+  padding: 10px;
+  border: 1px solid #d32f2f;
+  border-radius: 5px;
+}
+
+.warning {
+  color: #f57c00;
+  font-weight: bold;
+}
+
+.greyed-out {
+  opacity: 0.5;
+  pointer-events: none;
+}
+
+/* Responsive Design */
 @media only screen and (max-width: 768px) {
   .actions {
     flex-direction: column;
@@ -119,24 +193,30 @@ button:hover {
   .network-selector, .wallet-info-container {
     width: 100%;
   }
+
+  .loading-container, .error-container {
+    padding: 20px;
+  }
 }
 
-.error-message {
-  color: red;
-  font-weight: bold;
-  margin-top: 10px;
-  background-color: #ffe6e6;
-  padding: 10px;
-  border: 1px solid red;
-  border-radius: 5px;
+/* Toast Notifications */
+.Toastify__toast {
+  border-radius: 8px;
+  font-family: inherit;
 }
 
-.greyed-out {
-  opacity: 0.5;
-  pointer-events: none; /* Disable clicks and other interactions */
+.Toastify__toast--success {
+  background-color: #4caf50;
 }
 
-.warning {
-  color: red;
-  font-weight: bold;
+.Toastify__toast--error {
+  background-color: #d32f2f;
+}
+
+.Toastify__toast--warning {
+  background-color: #f57c00;
+}
+
+.Toastify__toast--info {
+  background-color: #1a237e;
 }

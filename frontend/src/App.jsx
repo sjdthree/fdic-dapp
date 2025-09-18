@@ -5,126 +5,161 @@ import { BlockchainProvider, BlockchainContext } from './BlockchainProvider';
 import Deposit from './components/Deposit';
 import ClaimInsurance from './components/ClaimInsurance';
 import RegulatorPanel from './components/RegulatorPanel';
-import NavBar from './NavBar'; // Import the new NavBar component
+import NavBar from './NavBar';
 import './App.css';
-import { LoadingProvider, useLoading } from './LoadingContext';
+import { LoadingProvider } from './LoadingContext';
 import LoadingOverlay from './components/LoadingOverlay';
 import ToastNotifications from './components/ToastNotifications';
-import StepperProgress from './components/StepperProgress';
+import { CircularProgress } from '@mui/material';
 
 const theme = createTheme({
   palette: {
     primary: {
-      main: '#1a237e',  // Dark blue for the top bar and other primary elements
+      main: '#1a237e',
     },
     secondary: {
-      main: '#03a9f4',  // Light blue for buttons and highlights
+      main: '#03a9f4',
     },
     background: {
-      default: '#f5f5f5',  // Soft gray background for the entire app
-      paper: '#ffffff',  // White background for form elements
+      default: '#f5f5f5',
+      paper: '#ffffff',
     },
     text: {
-      primary: '#212121',  // Dark text for contrast in light sections
-      secondary: '#ffffff',  // White text for buttons and dark background elements
+      primary: '#212121',
+      secondary: '#ffffff',
     },
   },
   typography: {
     fontFamily: '"Roboto", "Helvetica", "Arial", sans-serif',
     fontSize: 14,
     button: {
-      textTransform: 'none',  // No uppercase for buttons for a modern look
+      textTransform: 'none',
     },
   },
   components: {
     MuiButton: {
       styleOverrides: {
         root: {
-          color: '#ffffff',  // White text for buttons
-          backgroundColor: '#0d47a1',  // Light blue button background
+          color: '#ffffff',
+          backgroundColor: '#0d47a1',
           '&:hover': {
-            backgroundColor: '#0288d1',  // Slightly darker blue on hover
+            backgroundColor: '#0288d1',
           },
-          borderRadius: '8px',  // Rounded buttons
+          borderRadius: '8px',
         },
       },
     },
     MuiAppBar: {
       styleOverrides: {
         root: {
-          backgroundColor: '#1a237e',  // Dark blue top bar
+          backgroundColor: '#1a237e',
         },
       },
     },
     MuiSelect: {
       styleOverrides: {
         select: {
-          color: '#212121',  // Dark text for dropdown options to contrast white background
-          backgroundColor: '#ffffff',  // White background for dropdowns
+          color: '#212121',
+          backgroundColor: '#ffffff',
         },
         icon: {
-          color: '#212121',  // Dark icon for the dropdown arrow
+          color: '#212121',
         },
       },
     },
     MuiInputBase: {
       styleOverrides: {
         root: {
-          backgroundColor: '#ffffff',  // White background for input fields
-          color: '#212121',  // Dark text for contrast
+          backgroundColor: '#ffffff',
+          color: '#212121',
         },
       },
     },
     MuiMenuItem: {
       styleOverrides: {
         root: {
-          color: '#212121',  // Dark text for dropdown menu items
+          color: '#212121',
         },
       },
     },
     MuiPaper: {
       styleOverrides: {
         root: {
-          backgroundColor: '#ffffff',  // White background for dropdowns and menus
+          backgroundColor: '#ffffff',
         },
       },
     },
   },
 });
 
+// Error Boundary Component
+class ErrorBoundary extends React.Component {
+  constructor(props) {
+    super(props);
+    this.state = { hasError: false };
+  }
+
+  static getDerivedStateFromError(error) {
+    return { hasError: true };
+  }
+
+  componentDidCatch(error, errorInfo) {
+    console.error('App Error:', error, errorInfo);
+  }
+
+  render() {
+    if (this.state.hasError) {
+      return (
+        <div className="error-container">
+          <h2>Something went wrong.</h2>
+          <button onClick={() => window.location.reload()}>Refresh Page</button>
+        </div>
+      );
+    }
+
+    return this.props.children;
+  }
+}
+
+// Loading Component
+const LoadingSpinner = () => (
+  <div className="loading-container">
+    <CircularProgress size={40} />
+    <p>Loading application...</p>
+  </div>
+);
+
 function App() {
   return (
-    <ThemeProvider theme={theme}>
-      <BlockchainProvider>
-        <Router>
-          <LoadingProvider >
-          <NavBar /> {/* Add NavBar here to be available on all routes */}
-          <LoadingOverlay open={false}/>
-          <ToastNotifications />
-          <Routes>
-            <Route path="/" element={<MainApp />} />
-            <Route path="/regulator" element={<RegulatorPanel />} />
-          </Routes>
-          </LoadingProvider>
-        </Router>
-      </BlockchainProvider>
-    </ThemeProvider>
+    <ErrorBoundary>
+      <ThemeProvider theme={theme}>
+        <BlockchainProvider>
+          <Router>
+            <LoadingProvider>
+              <NavBar />
+              <LoadingOverlay open={false}/>
+              <ToastNotifications />
+              <Routes>
+                <Route path="/" element={<MainApp />} />
+                <Route path="/regulator" element={<RegulatorPanel />} />
+              </Routes>
+            </LoadingProvider>
+          </Router>
+        </BlockchainProvider>
+      </ThemeProvider>
+    </ErrorBoundary>
   );
 }
 
 function MainApp() {
   const { isLoading } = useContext(BlockchainContext);
 
-
   if (isLoading) {
-    return <div className="loading">Loading...</div>;
+    return <LoadingSpinner />;
   }
-
-
 
   return (
     <div className="app-container">
-
       {/* Header Section */}
       <header className="app-header">
         <h1>On-Chain FDIC Insurance DApp</h1>
@@ -148,7 +183,6 @@ function MainApp() {
           finance (DeFi) can provide transparency and trust in banking.
         </p>
       </section>
-
 
       {/* Action Section */}
       <div className="action-section">

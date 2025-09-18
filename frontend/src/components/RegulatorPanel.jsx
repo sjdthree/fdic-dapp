@@ -1,8 +1,7 @@
-import React, { useState, useContext, useEffect } from "react";
-import { BlockchainContext } from "../BlockchainProvider";
+import React, { useState, useEffect } from "react";
 import { ethers } from "ethers";
 import ERC20FDIC from "../abis/ERC20FDIC.json";
-import USDCERC20 from "../abis/USDCERC20.json"; // Your contract ABI
+import USDCERC20 from "../abis/USDCERC20.json";
 import {
   TextField,
   Button,
@@ -12,16 +11,13 @@ import {
   Paper,
   Popover,
   IconButton,
-  FormControl,
-  InputLabel,
-  Select,
-  MenuItem,
 } from "@mui/material";
-import HelpOutlineIcon from "@mui/icons-material/HelpOutline"; // Icon for help
+import HelpOutlineIcon from "@mui/icons-material/HelpOutline";
 import { useLoading } from "../LoadingContext";
 import { notify } from "./ToastNotifications";
 import LoadingOverlay from "./LoadingOverlay";
 import BankStatusGrid from "./BankStatusGrid";
+import { useDynamicContext, useIsLoggedIn } from '@dynamic-labs/sdk-react-core';
 
 const fdicContractAddress = import.meta.env.VITE_FDIC_CONTRACT_ADDRESS;
 const regulatorWallet = import.meta.env.VITE_REGULATOR_WALLET;
@@ -30,7 +26,8 @@ const defaultTokenAddress = import.meta.env.VITE_DEFAULT_TOKEN_ADDRESS;
 const steps = ["Initializing", "Processing", "Finalizing"];
 
 const RegulatorPanel = () => {
-  const { provider, account } = useContext(BlockchainContext);
+  const { primaryWallet } = useDynamicContext();
+  const isLoggedIn = useIsLoggedIn();
   const [contract, setContract] = useState(null);
   const [creator, setCreator] = useState(regulatorWallet);
   const [newBankAddress, setNewBankAddress] = useState(defaultBankAddress);
@@ -41,9 +38,9 @@ const RegulatorPanel = () => {
   const [isCorrectWallet, setIsCorrectWallet] = useState(false);
   const { isLoading, setIsLoading } = useLoading();
   const [activeStep, setActiveStep] = useState(0);
-  const [banks, setBanks] = useState([]); // State to hold all banks
-  const [failedBanks, setFailedBanks] = useState([]); // State for failed banks
-  const [regulators, setRegulators] = useState([]); // State for regulators
+  const [banks, setBanks] = useState([]);
+  const [failedBanks, setFailedBanks] = useState([]);
+  const [regulators, setRegulators] = useState([]);
   const [bankStatus, setbankStatus] = useState([]);
   const [tokenSymbol, setTokenSymbol] = useState("");
 
@@ -53,39 +50,50 @@ const RegulatorPanel = () => {
 
   const open = Boolean(anchorEl);
 
+  const getContractWithSigner = async () => {
+    if (!primaryWallet) return null;
+    const walletClient = await primaryWallet.getWalletClient();
+    const ethersProvider = new ethers.BrowserProvider(walletClient.provider);
+    const signer = await ethersProvider.getSigner();
+    return new ethers.Contract(fdicContractAddress, ERC20FDIC.abi, signer);
+  };
+
   // Check if the connected account is the correct regulator wallet
   useEffect(() => {
-    if (contract) {
-      const regCheck = async () => {
-        const result = await contract.isRegulator(account);
-        setIsCorrectWallet(result);
-      };
-      regCheck().catch((error) => {
-        console.error("Error checking regulator status:", error);
-        setIsCorrectWallet(false);
-      });
-    }
-  }, [contract, account]);
+    const checkRegulator = async () => {
+      if (primaryWallet && isLoggedIn) {
+        try {
+          const contract = await getContractWithSigner();
+          if (!contract) return;
+
+          const walletClient = await primaryWallet.getWalletClient();
+          const address = await walletClient.getAddress();
+          const result = await contract.isRegulator(address);
+          setIsCorrectWallet(result);
+        } catch (error) {
+          console.error("Error checking regulator status:", error);
+          setIsCorrectWallet(false);
+        }
+      }
+    };
+    checkRegulator();
+  }, [primaryWallet, isLoggedIn]);
 
   // Initialize contract
   useEffect(() => {
     const initContract = async () => {
-      if (provider && account) {
+      if (primaryWallet && isLoggedIn) {
         setActiveStep(1);
         try {
           console.log("Initializing contract...");
           setIsLoading(true);
-          const signer = await provider.getSigner();
 
-          const fdicContract = new ethers.Contract(
-            fdicContractAddress,
-            ERC20FDIC.abi,
-            signer
-          );
+          const contract = await getContractWithSigner();
+          if (!contract) return;
 
-          setContract(fdicContract);
-          console.log("Contract initialized:", fdicContract);
-          fetchInitialData(); // Fetch data after initialization
+          setContract(contract);
+          console.log("Contract initialized:", contract);
+          await fetchInitialData(contract);
           setIsLoading(false);
           setActiveStep(3);
         } catch (error) {
@@ -93,41 +101,29 @@ const RegulatorPanel = () => {
           setActiveStep(0);
           console.error("Error initializing contract:", error);
         }
-      } else {
-        console.log("No provider or account found in initContract");
-        setIsLoading(false);
       }
     };
 
     initContract();
-  }, [provider, account]);
+  }, [primaryWallet, isLoggedIn]);
 
-  const fetchInitialData = async () => {
+  const fetchInitialData = async (contract) => {
     if (!contract) return;
-    // Fetch data in parallel
     await Promise.all([
-      fetchInsurancePoolBalance(),
-      fetchBanks(),
-      fetchFailedBanks(),
-      fetchRegulators(),
+      fetchInsurancePoolBalance(contract),
+      fetchBanks(contract),
+      fetchFailedBanks(contract),
+      fetchRegulators(contract),
       getBankStatus(),
-      fetchTokenSymbol(defaultTokenAddress),
+      fetchTokenSymbol(),
     ]);
   };
 
-  useEffect(() => {
-    fetchInitialData();
-  }, [contract]);
-
-  // Fetch the insurance pool balance from the contract
-  const fetchInsurancePoolBalance = async () => {
-    if (!contract) return;
-
+  const fetchInsurancePoolBalance = async (contractToUse) => {
     try {
       setIsLoading(true);
       setActiveStep(1);
-      const balance = await contract.getInsurancePoolBalance();
-      // Format and round to 2 decimal places
+      const balance = await contractToUse.getInsurancePoolBalance();
       const formattedBalance = parseFloat(ethers.formatEther(balance)).toFixed(2);
       setInsurancePoolBalance(formattedBalance);
       setIsLoading(false);
@@ -137,28 +133,23 @@ const RegulatorPanel = () => {
     }
   };
 
-  const fetchTokenSymbol = async (tokenAddress) => {
+  const fetchTokenSymbol = async () => {
     try {
-      const signer = await provider.getSigner();
-      const tokenContract = new ethers.Contract(
-        tokenAddress,
-        USDCERC20.abi,
-        signer
-      );
-      const tokenSymbol = await tokenContract.symbol(); // Fetch token symbol via ERC20 standard `symbol` function
-      setTokenSymbol(tokenSymbol);
+      const walletClient = await primaryWallet.getWalletClient();
+      const ethersProvider = new ethers.BrowserProvider(walletClient.provider);
+      const signer = await ethersProvider.getSigner();
+      const tokenContract = new ethers.Contract(defaultTokenAddress, USDCERC20.abi, signer);
+      const symbol = await tokenContract.symbol();
+      setTokenSymbol(symbol);
     } catch (error) {
       console.error("Error fetching token symbol:", error);
-      setTokenSymbol("Token"); // Fallback in case of error
+      setTokenSymbol("Token");
     }
   };
 
-  // Fetch all banks
-  const fetchBanks = async () => {
-    if (!contract) return;
-
+  const fetchBanks = async (contractToUse) => {
     try {
-      const allBanks = await contract.getBanks();
+      const allBanks = await contractToUse.getBanks();
       console.log("All Banks:", allBanks);
       setBanks(allBanks);
     } catch (error) {
@@ -166,12 +157,9 @@ const RegulatorPanel = () => {
     }
   };
 
-  // Fetch all failed banks
-  const fetchFailedBanks = async () => {
-    if (!contract) return;
-
+  const fetchFailedBanks = async (contractToUse) => {
     try {
-      const allFailedBanks = await contract.getFailedBanks();
+      const allFailedBanks = await contractToUse.getFailedBanks();
       console.log("All Failed Banks:", allFailedBanks);
       setFailedBanks(allFailedBanks);
     } catch (error) {
@@ -179,12 +167,9 @@ const RegulatorPanel = () => {
     }
   };
 
-  // Fetch all regulators
-  const fetchRegulators = async () => {
-    if (!contract) return;
-
+  const fetchRegulators = async (contractToUse) => {
     try {
-      const allRegulators = await contract.getRegulators();
+      const allRegulators = await contractToUse.getRegulators();
       console.log("All Regulators:", allRegulators);
       setRegulators(allRegulators);
     } catch (error) {
@@ -201,14 +186,12 @@ const RegulatorPanel = () => {
     console.log("bankStatus", bankStatus);
   };
 
-  // Register a new bank
   const registerBank = async () => {
     if (!newBankAddress) {
       notify("Please enter a valid bank address.");
       return;
     }
 
-    // Check if the bank is already registered
     if (banks.includes(newBankAddress)) {
       notify("This bank is already registered.");
       return;
@@ -220,9 +203,9 @@ const RegulatorPanel = () => {
       const tx = await contract.registerBank(newBankAddress);
       await tx.wait();
       notify(`Bank ${newBankAddress} registered successfully.`);
-      setNewBankAddress(""); // Reset the input field
+      setNewBankAddress("");
       setIsLoading(false);
-      fetchBanks(); // Refresh bank list
+      await fetchBanks(contract);
     } catch (error) {
       setIsLoading(false);
       console.error("Error registering bank:", error);
@@ -230,7 +213,6 @@ const RegulatorPanel = () => {
     }
   };
 
-  // Add new regulator
   const handleAddRegulator = async () => {
     if (!newRegulatorAddress) {
       notify("Please enter a new regulator address.");
@@ -244,7 +226,7 @@ const RegulatorPanel = () => {
       await tx.wait();
       notify(`Regulator ${newRegulatorAddress} added successfully.`);
       setIsLoading(false);
-      fetchRegulators(); // Refresh regulator list
+      await fetchRegulators(contract);
     } catch (error) {
       setIsLoading(false);
       console.error("Error adding regulator:", error);
@@ -252,7 +234,6 @@ const RegulatorPanel = () => {
     }
   };
 
-  // Mark a bank as failed
   const failBank = async (bankToFail) => {
     if (!bankToFail) {
       notify("Please enter a valid bank address.");
@@ -265,9 +246,9 @@ const RegulatorPanel = () => {
       const tx = await contract.failBank(bankToFail);
       await tx.wait();
       notify(`Bank ${bankToFail} marked as failed.`);
-      setBankToFail(""); // Reset the input field
+      setBankToFail("");
       setIsLoading(false);
-      fetchFailedBanks(); // Refresh failed bank list
+      await fetchFailedBanks(contract);
     } catch (error) {
       setIsLoading(false);
       console.error("Error failing bank:", error);
@@ -275,7 +256,6 @@ const RegulatorPanel = () => {
     }
   };
 
-  // Mark a bank as failed
   const unfailBank = async (bankToUnFail) => {
     if (!bankToUnFail) {
       notify("Please enter a valid bank address.");
@@ -288,9 +268,9 @@ const RegulatorPanel = () => {
       const tx = await contract.unfailBank(bankToUnFail);
       await tx.wait();
       notify(`Bank ${bankToUnFail} marked as Good.`);
-      setBankToUnFail(""); // Reset the input field
+      setBankToUnFail("");
       setIsLoading(false);
-      fetchFailedBanks(); // Refresh failed bank list
+      await fetchFailedBanks(contract);
     } catch (error) {
       setIsLoading(false);
       console.error("Error unfailing bank:", error);
@@ -298,22 +278,27 @@ const RegulatorPanel = () => {
     }
   };
 
-  // Function to open the popover
   const handlePopoverOpen = (event, content) => {
     setAnchorEl(event.currentTarget);
     setPopoverContent(content);
   };
 
-  // Function to close the popover
   const handlePopoverClose = () => {
     setAnchorEl(null);
     setPopoverContent("");
   };
 
+  if (!primaryWallet || !isLoggedIn) {
+    return (
+      <Box p={4}>
+        <Typography variant="h6">Please connect your wallet to access the Regulator Panel.</Typography>
+      </Box>
+    );
+  }
+
   return (
     <Box p={4}>
       <Paper elevation={3} sx={{ padding: 4 }}>
-        {/* Page Header */}
         <Typography variant="h4" gutterBottom>
           Regulator Control Panel
           <IconButton
@@ -328,7 +313,6 @@ const RegulatorPanel = () => {
           </IconButton>
         </Typography>
 
-        {/* Contract Creator and Insurance Pool Balance */}
         <Box mb={4}>
           <Typography variant="body1" gutterBottom>
             Main Regulator Address: {creator || "Not available"}
@@ -356,7 +340,6 @@ const RegulatorPanel = () => {
           tokenSymbol={tokenSymbol}
         />
 
-        {/* Register Bank Section */}
         <Box mb={4}>
           <Typography variant="h5" gutterBottom>
             Register a New Bank Address
@@ -395,7 +378,6 @@ const RegulatorPanel = () => {
           </Grid2>
         </Box>
 
-        {/* Add Regulator Section */}
         <Box mb={4}>
           <Typography variant="h5" gutterBottom>
             Add New Regulator
@@ -434,7 +416,6 @@ const RegulatorPanel = () => {
           </Grid2>
         </Box>
 
-        {/* Popover for Help */}
         <Popover
           open={open}
           anchorEl={anchorEl}
@@ -445,7 +426,6 @@ const RegulatorPanel = () => {
           <Typography sx={{ p: 2 }}>{popoverContent}</Typography>
         </Popover>
 
-        {/* Loading Overlay */}
         <LoadingOverlay
           open={isLoading}
           currentStep={activeStep}

@@ -1,17 +1,17 @@
 // src/components/Deposit.js
-import React, { useState, useContext } from 'react';
+import React, { useState } from 'react';
 import './Deposit.css';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faMoneyCheckAlt } from '@fortawesome/free-solid-svg-icons';
 
 import { useFDICContract } from '../useFDICContract';
 import { parseEther, isAddress, ethers } from 'ethers';
-import { BlockchainContext } from '../BlockchainProvider';
 import ERC20FDIC from '../abis/ERC20FDIC.json';
 import USDCERC20 from '../abis/USDCERC20.json';
 import { useLoading } from '../LoadingContext';
 import { notify } from './ToastNotifications';
 import LoadingOverlay from './LoadingOverlay';
+import { useDynamicContext, useIsLoggedIn } from '@dynamic-labs/sdk-react-core';
 
 const defaultBankAddress = import.meta.env.VITE_DEFAULT_BANK_ADDRESS;
 const defaultTokenAddress = import.meta.env.VITE_DEFAULT_TOKEN_ADDRESS;
@@ -19,11 +19,12 @@ const steps = ['Approving', 'Depositing', 'Finalizing'];
 
 const Deposit = () => {
   const fdicContract = useFDICContract();
-  const { provider } = useContext(BlockchainContext);
+  const { primaryWallet } = useDynamicContext();
+  const isLoggedIn = useIsLoggedIn();
   const [bankAddress, setBankAddress] = useState('');
   const [depositAmount, setDepositAmount] = useState('');
   const [tokenAddress, setTokenAddress] = useState('');
-  const [error, setError] = useState(null); // Error state
+  const [error, setError] = useState(null);
   const { isLoading, setIsLoading } = useLoading();
   const [activeStep, setActiveStep] = useState(0);
   
@@ -32,14 +33,14 @@ const Deposit = () => {
   if (!bankAddress) {setBankAddress(defaultBankAddress);}
   if (!tokenAddress) {setTokenAddress(defaultTokenAddress);}
 
-  if (!fdicContract) {
-    return <div>Please login to make a deposit.</div>;
+  if (!isLoggedIn || !primaryWallet) {
+    return <div>Please connect your wallet to make a deposit.</div>;
   }
 
   const handleDeposit = async () => {
-    setError(null); // Clear previous errors
-    if (!provider) {
-      setError('Provider is not initialized. Please try again.');
+    setError(null);
+    if (!primaryWallet) {
+      setError('Wallet is not connected. Please connect your wallet and try again.');
       return;
     }
     if (!bankAddress.trim()) {
@@ -50,7 +51,7 @@ const Deposit = () => {
       notify('Please enter a valid Ethereum address for the bank.');
       return;
     }
-    const numericAmount = parseFloat(depositAmount); // Convert to a number
+    const numericAmount = parseFloat(depositAmount);
 
     if (!depositAmount.trim() || isNaN(numericAmount) || numericAmount <= 0) {
       setError('Please enter a valid deposit amount.');
@@ -63,42 +64,48 @@ const Deposit = () => {
       setError('FDIC Contract is not initialized. Please try again.');
       return;
     }
+
     try {
       setIsLoading(true);
-      setActiveStep(1); 
-      const amountInWei = ethers.parseUnits(depositAmount, 18); // Assuming the token has 18 decimals
-      // Approve FDIC contract to spend tokens
-      const signer = await provider.getSigner();
+      setActiveStep(1);
+
+      // Get the wallet client and create contracts
+      const walletClient = await primaryWallet.getWalletClient();
+      const ethersProvider = new ethers.BrowserProvider(walletClient.provider);
+      const signer = await ethersProvider.getSigner();
       const tokenContract = new ethers.Contract(tokenAddress, USDCERC20.abi, signer);
-      const approvalTx = await tokenContract.approve(fdicContract, ethers.parseUnits(depositAmount, 18));     
+
+      const amountInWei = ethers.parseUnits(depositAmount, 18);
+      
+      // Approve FDIC contract to spend tokens
+      const approvalTx = await tokenContract.approve(fdicContract.target, amountInWei);     
       await approvalTx.wait();
 
       console.log('Approval successful', approvalTx);
-      setActiveStep(2); 
+      setActiveStep(2);
+      
       const tx = await fdicContract.deposit(bankAddress, tokenAddress, amountInWei);
       await tx.wait();
-      setActiveStep(3); 
+      
+      setActiveStep(3);
       console.log('Deposit successful', tx);
       notify(`Deposit successful: ${depositAmount} tokens to ${bankAddress}`);
       setIsLoading(false);
-      setActiveStep(0); 
+      setActiveStep(0);
     } catch (error) {
       setIsLoading(false);
-      setActiveStep(0); 
+      setActiveStep(0);
       console.error(error);
       handleDepositError(error);
     }
   };
 
   const handleDepositError = (error) => {
-    // Smart Contract specific errors
     if (error.message.includes('Bank is not registered')) {
       setError('The selected bank is not registered. Please select a valid bank.');
     } else if (error.message.includes('Bank has failed')) {
       setError('The selected bank has failed. You cannot deposit funds into a failed bank.');
-    }
-    // Ethereum transaction errors
-    else if (error.code === 'INSUFFICIENT_FUNDS') {
+    } else if (error.code === 'INSUFFICIENT_FUNDS') {
       setError('You do not have enough funds in your wallet to complete this transaction.');
     } else if (error.code === 'INVALID_ARGUMENT') {
       setError('Invalid input. Please ensure the amount is a valid number.');
@@ -112,10 +119,10 @@ const Deposit = () => {
   return (
     <div className="deposit-container">
       <h2><FontAwesomeIcon icon={faMoneyCheckAlt} /> Make a Deposit</h2>
-        <p>
+      <p>
         In this section, you can deposit funds into a blockchain bank. Just like 
         depositing money into a real bank account, the amount you enter will be 
-        stored in the bank’s smart contract.
+        stored in the bank's smart contract.
       </p>
       <label>
         <strong>Bank Address:</strong>
@@ -127,7 +134,7 @@ const Deposit = () => {
         />
         <p>
           The blockchain address of the bank where you want to deposit your 
-          funds. Think of this as the bank’s unique identifier on the blockchain.
+          funds. Think of this as the bank's unique identifier on the blockchain.
         </p>
       </label>
       <label>
@@ -165,7 +172,6 @@ const Deposit = () => {
       </p>
     </div>
   );
-
 }
 
 export default Deposit;
