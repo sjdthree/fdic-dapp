@@ -21,7 +21,17 @@ export default defineConfig({
     VitePWA({
       registerType: 'autoUpdate',
       workbox: {
-        maximumFileSizeToCacheInBytes: 5 * 1024 * 1024,
+        maximumFileSizeToCacheInBytes: 10 * 1024 * 1024, // 10MB to handle large bundles
+        globPatterns: ['**/*.{js,css,html,ico,png,svg,json,vue,txt,woff2}'],
+        runtimeCaching: [
+          {
+            urlPattern: /^https:\/\/.*\.js$/,
+            handler: 'NetworkFirst',
+            options: {
+              cacheName: 'js-cache',
+            },
+          },
+        ],
       },
       injectRegister: 'auto',
       devOptions: {

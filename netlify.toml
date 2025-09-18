@@ -1,6 +1,11 @@
 [build]
-  publish = "dist"
-  command = "yarn build"
+  publish = "frontend/dist"
+  command = "cd frontend && npm install && npm run build"
+  base = "."
+
+[build.environment]
+  NODE_VERSION = "20"
+  NPM_FLAGS = "--production=false"
 
 [[redirects]]
   from = "/*"
