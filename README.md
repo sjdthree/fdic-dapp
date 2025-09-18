@@ -1,7 +1,10 @@
 # README.md
 
 # On-Chain FDIC Insurance DApp
-This repository contains the code for an **On-Chain FDIC Insurance Decentralized Application (DApp)**, which simulates the insurance mechanism provided by the Federal Deposit Insurance Corporation (FDIC) using Ethereum smart contracts and a React.js frontend.
+
+> ⚠️ **IMPORTANT DISCLAIMER**: This project is NOT affiliated with the Federal Deposit Insurance Corporation (FDIC). It's an educational demonstration only. See [DISCLAIMER.md](./DISCLAIMER.md) for full legal notice.
+
+This repository contains the code for an **On-Chain FDIC Insurance Decentralized Application (DApp)**, which simulates insurance mechanisms similar to those provided by traditional deposit insurance using Ethereum smart contracts and a React.js frontend.
 
 ## Table of Contents
 - [Project Overview](#project-overview)

@@ -14,7 +14,9 @@ Currently supporting the latest version on the main branch.
 We take security seriously. If you discover a security vulnerability, please follow these steps:
 
 1. **DO NOT** create a public GitHub issue
-2. Send a detailed report to the repository maintainers via GitHub private message
+2. Send a detailed report to the repository maintainers:
+   - Use GitHub's "Security" tab to report vulnerabilities privately
+   - Or email: security@[your-domain].com (replace with actual contact)
 3. Include:
    - Description of the vulnerability
    - Steps to reproduce

@@ -6,9 +6,12 @@ Thank you for your interest in contributing to the On-Chain FDIC Insurance DApp!
 
 ### Reporting Issues
 
-- Use the GitHub Issues page to report bugs
+- Use the GitHub Issues page to report bugs using our issue templates
+- For security vulnerabilities, see [SECURITY.md](./SECURITY.md) for private reporting
 - Clearly describe the issue including steps to reproduce
 - Include relevant logs, screenshots, and system information
+- Specify which component is affected (frontend, smart contracts, etc.)
+- Include network and wallet information if applicable
 
 ### Suggesting Enhancements
 
