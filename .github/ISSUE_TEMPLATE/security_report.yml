@@ -1,0 +1,44 @@
+name: Security Vulnerability Report
+description: Report a security vulnerability (DO NOT use this for public disclosure)
+title: "[Security]: "
+labels: ["security"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        ⚠️ **IMPORTANT SECURITY NOTICE** ⚠️
+
+        **DO NOT** use this template to report actual security vulnerabilities!
+
+        For security issues, please follow our responsible disclosure process:
+        1. **DO NOT** create a public issue
+        2. Email us privately at: [Your Security Email]
+        3. Include details in your private communication
+        4. Allow us time to investigate and patch before public disclosure
+
+        See our [SECURITY.md](../SECURITY.md) file for full details.
+
+        This template is only for:
+        - Questions about security practices
+        - Suggestions for improving security documentation
+        - General security-related discussions
+
+  - type: textarea
+    id: security-question
+    attributes:
+      label: Security Question or Suggestion
+      description: What security-related question or suggestion do you have?
+      placeholder: "Please describe your security-related question or suggestion..."
+    validations:
+      required: true
+
+  - type: checkboxes
+    id: confirmation
+    attributes:
+      label: Confirmation
+      description: Please confirm you understand this is NOT for reporting actual vulnerabilities
+      options:
+        - label: I understand this template is NOT for reporting security vulnerabilities
+          required: true
+        - label: I have read the SECURITY.md file for reporting actual vulnerabilities
+          required: true

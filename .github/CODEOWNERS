@@ -1,0 +1,24 @@
+# Global code owners
+* @sjdthree
+
+# Smart contracts require additional review
+contracts/ @sjdthree
+*.sol @sjdthree
+
+# Frontend changes
+frontend/ @sjdthree
+src/ @sjdthree
+
+# Documentation changes
+*.md @sjdthree
+docs/ @sjdthree
+
+# Configuration files
+.github/ @sjdthree
+*.json @sjdthree
+*.js @sjdthree
+*.ts @sjdthree
+
+# Security-sensitive files
+SECURITY.md @sjdthree
+.github/workflows/ @sjdthree

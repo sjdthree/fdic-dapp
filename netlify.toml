@@ -1,6 +1,12 @@
 [build]
-  publish = "dist"
-  command = "yarn build"
+  publish = "frontend/dist"
+  command = "cd frontend && npm ci --include=optional && (npm install -D --no-save --package-lock=false @rollup/rollup-linux-x64-gnu || true) && NODE_OPTIONS='--max-old-space-size=8192' npm run build"
+  base = "."
+
+[build.environment]
+  NODE_VERSION = "20"
+  NPM_FLAGS = "--production=false"
+  NODE_OPTIONS = "--max-old-space-size=8192"
 
 [[redirects]]
   from = "/*"

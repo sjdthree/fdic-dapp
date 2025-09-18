@@ -7,18 +7,20 @@ import Toolbar from '@mui/material/Toolbar';
 import Typography from '@mui/material/Typography';
 import Menu from '@mui/material/Menu';
 import MenuItem from '@mui/material/MenuItem';
-import Button from '@mui/material/Button';
-import ThreeDButton from './components/ThreeDButton';
 import { Box } from '@mui/material';
 import { useTheme } from '@mui/material/styles';
 import CurrentBankingMarket from './components/CurrentBankingMarket';
+import ThreeDButton from './components/ThreeDButton';
+import { DynamicWidget, useDynamicContext, useWalletOptions } from '@dynamic-labs/sdk-react-core';
 
 const NavBar = () => {
   const defaultNetwork = "Sepolia";
-  const { account, loggedIn, login, logout, selectedChain } = useContext(BlockchainContext);
+  const { account , handleConnectedWallet} = useContext(BlockchainContext);
+  const { handleLogOut, user, primaryWallet } = useDynamicContext();
   const [anchorEl, setAnchorEl] = useState(null);
   const [networkEl, setNetworkEl] = useState(null);
   const [selectedValue, setSelectedChain] = useState(defaultNetwork);
+  const { openWalletSelector } = useWalletOptions();
 
   const theme = useTheme();
 
@@ -32,15 +34,31 @@ const NavBar = () => {
 
   const handleNetworkChange = (value) => {
     setSelectedChain(value);
-    // handleChainChange({ target: { value } });
     handleNetworkClose();
+  };
+
+  const handleConnectWallet = async () => {
+    try {
+      if (!primaryWallet) {
+        // If no wallet is connected, show the Dynamic auth modal
+        await openWalletSelector();
+      }
+    } catch (error) {
+      console.error('Error connecting wallet:', error);
+    }
+    handleMenuClose();
+  };
+
+  const handleDisconnect = () => {
+    handleLogOut();
+    handleMenuClose();
   };
 
   // Dynamically create chainOptions from chainConfig
   const chainOptions = Object.entries(chainConfig).map(([key, config]) => ({
     value: key,
     label: config.displayName,
-    disabled: key !== defaultNetwork, // Disable options that are not "Amoy"
+    disabled: key !== defaultNetwork, // Disable options that are not "Sepolia"
   }));
 
   return (
@@ -51,7 +69,8 @@ const NavBar = () => {
         </Typography>
         
         {/* Add the Current Banking Market Popup Link */}
-        {loggedIn ? (<CurrentBankingMarket /> ) : null}
+        {user ? (<CurrentBankingMarket />) : null}
+        {console.log("user:", user)}
 
         <ThreeDButton
           label={selectedValue ? `Network: ${selectedValue}` : 'Select Network'}
@@ -75,17 +94,18 @@ const NavBar = () => {
         </Menu>
         <Box flexGrow={.01} />
         {/* Account & Wallet Info */}
-        {loggedIn ? (
-            <ThreeDButton
-            label={account ? `${account.slice(0, 6)}...${account.slice(-4)}` : 'Logged In'}
-            onClick={handleAccountClick}
-            />
-        ) : (
+        {user ? (
           <ThreeDButton
-          label="Login"
-          onClick={login}
+            label={account ? `${account.slice(0, 6)}...${account.slice(-4)}` : 'Connected'}
+            onClick={handleAccountClick}
           />
-          )}
+        ) : (
+          // <ThreeDButton
+          //   label="Connect Wallet"
+          //   onClick={handleConnectWallet}
+          // />
+          <DynamicWidget />
+        )}
 
         <Menu
           id="account-menu"
@@ -93,15 +113,15 @@ const NavBar = () => {
           open={Boolean(anchorEl)}
           onClose={handleMenuClose}
         >
-          {loggedIn ? (
+          {user ? (
             <div>
               <MenuItem>
                 <WalletInfo />
               </MenuItem>
-              <MenuItem onClick={logout}>Logout</MenuItem>
+              <MenuItem onClick={handleDisconnect}>Disconnect</MenuItem>
             </div>
           ) : (
-            <MenuItem onClick={login}>Login</MenuItem>
+            <MenuItem onClick={handleConnectWallet}>Connect Wallet</MenuItem>
           )}
         </Menu>
       </Toolbar>

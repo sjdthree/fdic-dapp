@@ -3,7 +3,9 @@
   "version": "0.1.0",
   "private": true,
   "dependencies": {
-    "@craco/craco": "^5.9.0",
+    "@dynamic-labs/ethereum": "4.32.0",
+    "@dynamic-labs/sdk-react-core": "3.9.2",
+    "@dynamic-labs/wagmi-connector": "3.9.2",
     "@emotion/react": "^11.13.3",
     "@emotion/styled": "^11.13.0",
     "@fortawesome/fontawesome-svg-core": "^6.6.0",
@@ -17,47 +19,34 @@
     "@testing-library/react": "^13.4.0",
     "@testing-library/user-event": "^13.5.0",
     "@vitejs/plugin-react": "^4.3.1",
-    "@web3auth/base": "^8.12.4",
-    "@web3auth/ethereum-provider": "^8.12.4",
-    "@web3auth/modal": "^8.12.7",
-    "@web3auth/openlogin-adapter": "^8.12.4",
     "assert": "^2.1.0",
     "browserify-zlib": "^0.2.0",
     "buffer": "^6.0.3",
     "crypto-browserify": "^3.12.0",
-    "customize-cra": "^1.0.0",
     "ethers": "^6.13.2",
     "https-browserify": "^1.0.0",
     "os-browserify": "^0.3.0",
+    "path-browserify": "^1.0.1",
     "process": "^0.11.10",
     "react": "^18.3.1",
     "react-dom": "^18.3.1",
     "react-router-dom": "^6.26.2",
-    "react-scripts": "5.0.1",
     "react-toastify": "^10.0.5",
     "stream-browserify": "^3.0.0",
     "stream-http": "^3.2.0",
-    "superstruct": "0.14.0",
     "url": "^0.11.4",
+    "util": "^0.12.5",
+    "viem": "2.37.6",
     "vite": "^5.4.6",
+    "vite-plugin-node-polyfills": "^0.21.0",
     "vite-plugin-pwa": "^0.20.5",
-    "vm-browserify": "^1.1.2",
-    "web-vitals": "^2.1.4",
-    "web3": "^4.12.1",
-    "webpack": "^5",
-    "webpack-cli": "^4",
-    "webpack-dev-server": "^4"
+    "wagmi": "2.17.0",
+    "web3": "^4.12.1"
   },
   "scripts": {
     "start": "vite",
     "build": "tsc && vite build",
     "serve": "vite preview"
-  },
-  "eslintConfig": {
-    "extends": [
-      "react-app",
-      "react-app/jest"
-    ]
   },
   "browserslist": {
     "production": [
@@ -71,13 +60,10 @@
       "last 1 safari version"
     ]
   },
-  "jest": {
-    "moduleNameMapper": {
-      "^@web3auth/modal$": "<rootDir>/src/__mocks__/@web3auth/modal.js"
-    }
-  },
   "devDependencies": {
-    "empty-module": "^0.0.2",
-    "typescript": "^5.6.2"
+    "@types/node": "^20.11.16",
+    "@types/react": "^18.2.55",
+    "@types/react-dom": "^18.2.19",
+    "typescript": "^5.3.3"
   }
 }
