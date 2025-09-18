@@ -85,4 +85,9 @@ This project is licensed under the MIT License.
 - **Ethereum Community**: For extensive documentation and support.
 - **Truffle Suite**: For simplifying Ethereum development.
 - **Ethers.js**: For providing a robust library to interact with Ethereum.
+
 - **OpenAI's ChatGPT**: For assistance in code generation and documentation.
+
+- **NSF Award**: This material is based upon work supported by the National Science Foundation under Award No. 2337771 (SBIR Phase I).  
+Any opinions, findings, and conclusions or recommendations expressed in this material are those of the authors and do not necessarily reflect the views of the National Science Foundation.
+---
