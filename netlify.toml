@@ -1,6 +1,6 @@
 [build]
   publish = "frontend/dist"
-  command = "cd frontend && npm install && npm run build"
+  command = "cd frontend && npm ci --include=optional && (npm install -D --no-save --package-lock=false @rollup/rollup-linux-x64-gnu || true) && npm run build"
   base = "."
 
 [build.environment]
