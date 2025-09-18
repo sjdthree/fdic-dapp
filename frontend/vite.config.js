@@ -89,6 +89,15 @@ export default defineConfig({
     sourcemap: true,
     commonjsOptions: {
       transformMixedEsModules: true,
+    },
+    rollupOptions: {
+      output: {
+        manualChunks: {
+          vendor: ['react', 'react-dom'],
+          wallet: ['@dynamic-labs/ethereum', '@dynamic-labs/sdk-react-core', 'viem', 'wagmi'],
+          ui: ['@mui/material', '@mui/icons-material', '@emotion/react', '@emotion/styled']
+        }
+      }
     }
   }
 });
